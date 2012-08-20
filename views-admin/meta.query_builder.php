@@ -36,7 +36,10 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	</select>
 </div>
 <br class="clear" />
-
+<label><?php _e('Category', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Tag', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Taxonomy', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Post & Page', 'wp-query-factory'); ?></label><br />
 <br />
 <label><?php _e('Select types to query', 'wp-query-factory'); ?></label>
 <ul>
@@ -44,6 +47,17 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	<li><label><input type="checkbox" name="query_builder[post_type][]" value="<?php echo $post_type; ?>" <?php checked( in_array($post_type, $saved_arguments['post_type']) ); ?> /> <?php echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $post_type))); ?></label></li>
 <?php endforeach; ?>
 </ul>
-
+<label><?php _e('Status', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Pagination', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Offset', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Order & Order By', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Sticky Post', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Time', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Custom Fields', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Permission', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Caching', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Field Parameters', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Search', 'wp-query-factory'); ?></label><br />
+<label><?php _e('Filters', 'wp-query-factory'); ?></label><br />
 
 
