@@ -45,10 +45,10 @@ if( ! class_exists('WP_Query_Factory') ) {
     const FACTORY_TYPE = 'wp-query-factory';
     const FACTORY_TEMPLATE = 'wp-query-factory-tpl';
 
-    static $query_types = array( 'WP_Query', 'WP_User_Query' );
     public $base_url;
     public $base_path;
     public $base_name;
+    public $wp_query_param;
 
     private $post_type_args = array(
         'public' => true,
@@ -68,6 +68,7 @@ if( ! class_exists('WP_Query_Factory') ) {
       $this->base_path = plugin_dir_path( __FILE__ );
       $this->base_url = plugin_dir_url( __FILE__ );
       $this->base_name = plugin_basename( __FILE__ );
+      $this->setup_wp_query_param();
 
       add_action( 'init', array( $this, 'register_framework' ) );
       add_filter( 'user_can_richedit', array( $this, 'disable_richedit') );
@@ -144,18 +145,32 @@ if( ! class_exists('WP_Query_Factory') ) {
       register_post_type( self::FACTORY_TEMPLATE,$args);
     }
 
+    public function setup_wp_query_param(){
+      $this->wp_query_param['query_type'] = apply_filters( self::DOMAIN . '-wp_query_param-query_type', array('WP_Query','WP_User_Query'));
+      $this->wp_query_param['post_type'] = apply_filters( self::DOMAIN . '-wp_query_param-post_type', array_filter(get_post_types(), array( $this, 'exclude_factory_types' ) ) );
+      $this->wp_query_param['post_status'] = apply_filters( self::DOMAIN . '-wp_query_param-post_status', array('publish','pending','draft','auto-draft','future','private','inherit','trash','any'));
+      $this->wp_query_param['order'] = apply_filters( self::DOMAIN . '-wp_query_param-order', array('DESC','ASC'));
+      $this->wp_query_param['orderby'] = apply_filters( self::DOMAIN . '-wp_query_param-orderby', array('date','ID','author','title','modified','parent','rand','comment_count','menu_order','meta_value','meta_value_num','none'));
+    }
+
+    public function exclude_factory_types( $post_type ){
+      return ! in_array($post_type, array(self::FACTORY_TYPE, self::FACTORY_TEMPLATE));
+    }
+
     // prevent wysiwyg rich editor from showing for templates
-    function disable_richedit($c) {
+    public function disable_richedit($c) {
         global $post_type;
-        if ( in_array( $post_type, array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE) ) ) {
+        // if ( in_array( $post_type, array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE) ) ) {
+        if( ! $this->exclude_factory_types( $post_type ) ) {
           return false;
         }
         return $c;
     }
 
     // prevent autosaves on plugin post types (prevents live results from changing during edit)
-    function enqueue_scripts() {
-        if ( in_array( get_post_type(), array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE)) )
+    public function enqueue_scripts() {
+        // if ( in_array( get_post_type(), array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE)) )
+        if( ! $this->exclude_factory_types( get_post_type() ) )
             wp_dequeue_script( 'autosave' );
     }
 

@@ -5,9 +5,16 @@ if ( !defined('ABSPATH') )
 
 if( ! class_exists('WP_Query_Factory_Editor') ) {
 	class WP_Query_Factory_Editor extends WP_Query_Factory {
+
+		public $query_builder_default;
+		public $query_builder_unset;
+
 		function __construct() {
 			add_action( 'admin_menu', array( $this, 'add_meta_box' ));
 			add_action( 'save_post', array( $this, 'save_meta_box' ));
+
+			$this->query_builder_unset = apply_filters( parent::DOMAIN . '-query_builder_unset', array('post_name','query_type','include_author','exclude_author'));
+			$this->query_builder_default =  apply_filters( parent::DOMAIN . '-query_builder_default', array('post_type','post_status','order','orderby'));
 		}
 
 		public function add_meta_box(){
@@ -36,23 +43,24 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 
 		public function query_builder( $post ){
 
+			$wp_query_factory = parent::instance();
+
 			// load saved data
 			$saved_arguments = unserialize(base64_decode($post->post_content));
-			// print_r($saved_arguments);
-			// if( isset($saved_arguments['author']) ) {
-			// 	foreach( $saved_arguments['author'] as $author_id ) {
-			// 		if ($number < 0) {
+			// echo '<pre>'; print_r($saved_arguments); echo '</pre>';
 
-			// 		} else {
+			// setup defaults
+			foreach($this->query_builder_default as $default ) {
+				$saved_arguments[$default] = isset($saved_arguments[$default]) ? $saved_arguments[$default] : (array) array_shift(array_values($wp_query_factory->wp_query_param[$default]));
+			}
 
-			// 		}
-			// 	}
-			// }
-			// $saved_include_authors = ;
-			// $saved_exclude_authors = ;
-
-			$post_types = apply_filters( parent::DOMAIN . '_editor_post_types', array_filter(get_post_types(), array( $this, 'exclude_post_types' ) ) );
+			// setup values
+			$query_types = $wp_query_factory->wp_query_param['query_type'];
 			$users = apply_filters( parent::DOMAIN . '_editor_users', get_users() );
+			$post_types = $wp_query_factory->wp_query_param['post_type'];
+			$post_status = $wp_query_factory->wp_query_param['post_status'];
+			$order = $wp_query_factory->wp_query_param['order'];
+			$orderby = $wp_query_factory->wp_query_param['orderby'];
 			
 			include parent::instance()->get_view('meta.query_builder', 'views-admin');
 		}
@@ -83,21 +91,25 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 				    return;
 			}
 
+			$wp_query_factory = parent::instance();
+
 			if( isset($_POST['query_builder'])) {
 
 				// print_r($_POST['query_builder']);
 				// die;
 
 				$post_name = sanitize_title($_POST['query_builder']['post_name']);
-				$query_type = in_array( $_POST['query_builder']['query_type'], parent::$query_types) ? $_POST['query_builder']['query_type'] : null;
+				$query_type = in_array( $_POST['query_builder']['query_type'], $wp_query_factory->wp_query_param['query_type']) ? $_POST['query_builder']['query_type'] : null;
 
 				switch( $query_type ) {
 					case 'WP_User_Query':
 						break;
 					default:
-						// protect blank query from lack of post type with default
-						$_POST['query_builder']['post_type'] = isset($_POST['query_builder']['post_type']) ? $_POST['query_builder']['post_type'] : (array)'post';
-
+						
+						// protect blank query from lack of field value with default
+						foreach($this->query_builder_default as $default ) {
+							$_POST['query_builder'][$default] = isset($_POST['query_builder'][$default]) ? $_POST['query_builder'][$default] : (array) array_shift(array_values($wp_query_factory->wp_query_param[$default]));
+						}
 
 						// prevent a blank author filter from existing
 						if( !empty($_POST['query_builder']['include_author']) && !empty($_POST['query_builder']['exclude_author'])) {
@@ -111,7 +123,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 						// print_r($_POST['query_builder']);
 						// die;
 
-						foreach(array('post_name','query_type','include_author','exclude_author') as $unset) {
+						foreach($this->query_builder_unset  as $unset) {
 							unset($_POST['query_builder'][$unset]);
 						}
 
@@ -138,8 +150,5 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 		    }
 	    }
 
-		public function exclude_post_types( $post_type ){
-			return ! in_array($post_type, array(parent::FACTORY_TYPE, parent::FACTORY_TEMPLATE));
-		}
 	}
 }
