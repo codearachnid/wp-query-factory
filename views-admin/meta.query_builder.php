@@ -71,7 +71,7 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	</div>
 	<div class="right_half">
 		<label><?php _e('Order By', 'wp-query-factory'); ?></label><br />
-		<select name="query_builder[orderby][]" data-placeholder="<?php _e('Select status to query', 'wp-query-factory'); ?>" class="chzn-select" style="width:350px" multiple tabindex="3">
+		<select name="query_builder[orderby]" data-placeholder="<?php _e('Select status to query', 'wp-query-factory'); ?>" class="chzn-select" style="width:350px" tabindex="3">
 		<?php foreach($orderby as $orderby_type ) : ?>
 			<option value="<?php echo $orderby_type; ?>" <?php selected( in_array($orderby_type, $saved_arguments['orderby']) ); ?>><?php echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $orderby_type))); ?></option>
 		<?php endforeach; ?>
