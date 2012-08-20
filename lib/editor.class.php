@@ -140,6 +140,9 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 					'post_content' => $post_content,
 					'post_mime_type' => $query_type
 					));
+
+				// flush the transient it will be rebuilt on first call from the front
+				delete_transient( self::DOMAIN . '_' . $post_name );
 			}
 		}
 

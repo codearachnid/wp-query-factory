@@ -81,23 +81,34 @@ if( ! class_exists('WP_Query_Factory') ) {
       // add_submenu_page( 'edit.php?post_type=' . self::FACTORY_TYPE, __('WP Query Factory Help', 'wp-query-factory'), __('Help', 'wp-query-factory'), 'manage_options', self::FACTORY_TYPE . '-help', array( $this, 'help' ));
     }
 
-    public function query( $post_id = null, $args = array() ) {
-      if( is_null($post_id) )
+    public function query( $query_id = null, $args = array() ) {
+      if( is_null($query_id) )
         return null;
 
-      $factory_args = array(
-        'name' => $post_id,
-        'post_type' => self::FACTORY_TYPE,
-        'posts_per_page' => 1
-        );
-      $query_factory = new WP_Query( $factory_args );
+      if ( false === ( $query_factory = get_transient( self::DOMAIN . '_' . $query_id ) ) ) {
+        // It wasn't there, so regenerate the data and save the transient
+        
+        $factory_args = array(
+          'name' => $query_id,
+          'post_type' => self::FACTORY_TYPE,
+          'posts_per_page' => 1
+          );
+        $query_factory = new WP_Query( $factory_args );
 
-      if( empty($query_factory->posts)) {
+        $query_factory = $query_factory->posts[0];
+        $query_factory->args = unserialize(base64_decode($query_factory->post_content));
+
+        // save $query_factory as transient to speed up future requests
+        set_transient( self::DOMAIN . '_' . $query_id, $query_factory );
+      }
+
+      if( empty($query_factory)) {
         return null;
       }
-      $wp_query_factory->ID = $query_factory->posts[0]->ID;
-      $wp_query_factory->args = unserialize(base64_decode($query_factory->posts[0]->post_content)); 
-      $wp_query_factory->query_type = $query_factory->posts[0]->post_mime_type;
+
+      $wp_query_factory->ID = $query_factory->ID;
+      $wp_query_factory->args = $query_factory->args; 
+      $wp_query_factory->query_type = $query_factory->post_mime_type;
       
       $args = wp_parse_args( $args, $wp_query_factory->args );
       switch( $wp_query_factory->query_type ) {
