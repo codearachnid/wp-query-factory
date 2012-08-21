@@ -1,0 +1,52 @@
+#meta_query_builder .inside {
+	span.timespacer{
+		width:100px;
+		margin:0 5px;
+		font-weight:bold;
+	}
+	select{
+		width:350px;
+		&.week{
+			width:175px;
+		}
+		&.month{
+			width:110px;
+		}
+		&.day{
+			width:80px;
+		}
+		&.time{
+			width:80px;
+		}
+	}
+	.left{
+		float:left;
+	}
+	.right{
+		float:right;
+	}
+	.query_type{
+		display:none;
+	}
+	.left_third_half, .right_third_half{
+		.left;
+		width:30%;
+	}
+	.left_twothird_half, .right_twothird_half{
+		.left;
+		width:70%;
+	}
+	.left_half, .right_half{
+		.left;
+		width:50%;
+	}
+	.right_third_half{
+		.right;
+	}
+	.right_twothird_half{
+		.right;
+	}
+	.right_half{
+		.right;
+	}
+}
