@@ -4,9 +4,41 @@
 #meta_query_builder .inside select{
 	width:350px;
 }
+#meta_query_builder .inside select.week{
+	width:175px;
+}
+#meta_query_builder .inside select.month{
+	width:110px;
+}
+#meta_query_builder .inside select.day{
+	width:80px;
+}
+#meta_query_builder .inside select.time{
+	width:80px;
+}
+span.timespacer{
+	width:100px;
+	margin:0 10px 0 0;
+}
+.left_third_half{
+	float:left;
+	width:30%;
+}
+.left_twothird_half{
+	float:left;
+	width:70%;
+}
 .left_half{
 	float:left;
 	width:50%;
+}
+.right_third_half{
+	float:right;
+	width:30%;
+}
+.right_twothird_half{
+	float:right;
+	width:70%;
 }
 .right_half{
 	float:right;

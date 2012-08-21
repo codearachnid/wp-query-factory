@@ -63,6 +63,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			$orderby = $wp_query_factory->wp_query_param['orderby'];
 			$offset = isset($saved_arguments['offset']) ? $saved_arguments['offset'] : '';
 			$year = isset($saved_arguments['year']) ? $saved_arguments['year'] : '';
+			$s = isset($saved_arguments['s']) ? $saved_arguments['s'] : '';
 
 			// setup ordinal formatting if I can figure out why PHP 5.3+ throws class not found err
 			// $ordinal = new NumberFormatter( (WPLANG != '') ? WPLANG : 'en_US', NumberFormatter::ORDINAL);
