@@ -81,6 +81,8 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	</div>
 	<br class="clear" />
 	<label><?php _e('Sticky Post', 'wp-query-factory'); ?></label><br />
+	<label><input type="checkbox" name="query_builder[ignore_sticky_posts]" value="1" <?php checked(1, $saved_arguments['ignore_sticky_posts']); ?> /> <?php _e('Ignore sticky posts','wp-query-factory'); ?></label>
+	<p class="description"><?php _e("Return ALL posts within the set parameters of this query, but don't show sticky posts at the top. The 'sticky posts' will still show in their natural position (e.g. by date).", 'wp-query-factory'); ?></p>
 	<label><?php _e('Time', 'wp-query-factory'); ?></label><br />
 	<label><?php _e('Custom Fields', 'wp-query-factory'); ?></label><br />
 	<label><?php _e('Permission', 'wp-query-factory'); ?></label><br />

@@ -75,11 +75,23 @@ if( ! class_exists('WP_Query_Factory') ) {
       add_filter( 'user_can_richedit', array( $this, 'disable_richedit') );
       add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts') );
       add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+      add_action( 'admin_bar_menu', array($this, 'admin_bar_menu' ), 100 );
       add_filter( 'post_updated_messages', array( $this, 'override_confirmation_messages') );
     }
 
     public function admin_menu() {
       // add_submenu_page( 'edit.php?post_type=' . self::FACTORY_TYPE, __('WP Query Factory Help', 'wp-query-factory'), __('Help', 'wp-query-factory'), 'manage_options', self::FACTORY_TYPE . '-help', array( $this, 'help' ));
+    }
+    function admin_bar_menu() {
+      global $wp_admin_bar;
+
+      if ( !is_super_admin() || !is_admin_bar_showing() )
+        return;
+      $wp_admin_bar->add_menu( array(
+        'parent' => 'site-name',
+        'id' => self::FACTORY_TYPE,
+        'title' => __('Query Factory','wp-query-factory'),
+        'href' => get_admin_url() . 'edit.php?post_type=' . self::FACTORY_TYPE ) );
     }
 
     public function query( $query_id = null, $args = array() ) {
