@@ -41,6 +41,7 @@ if( ! class_exists('WP_Query_Factory') ) {
     protected static $instance;
 
     const VERSION = 1.0;
+    const TRANSIENT = 'WPQF';
     const DOMAIN = 'wp_query_factory';
     const FACTORY_TYPE = 'wp-query-factory';
     const FACTORY_TEMPLATE = 'wp-query-factory-tpl';
@@ -85,7 +86,7 @@ if( ! class_exists('WP_Query_Factory') ) {
       if( is_null($query_id) )
         return null;
 
-      if ( false === ( $query_factory = get_transient( self::DOMAIN . '_' . $query_id ) ) ) {
+      if ( false === ( $query_factory = get_transient( self::TRANSIENT . '_' . $query_id ) ) ) {
         // It wasn't there, so regenerate the data and save the transient
         
         $factory_args = array(
@@ -99,7 +100,7 @@ if( ! class_exists('WP_Query_Factory') ) {
         $query_factory->args = unserialize(base64_decode($query_factory->post_content));
 
         // save $query_factory as transient to speed up future requests
-        set_transient( self::DOMAIN . '_' . $query_id, $query_factory );
+        set_transient( self::TRANSIENT . '_' . $query_id, $query_factory );
       }
 
       if( empty($query_factory)) {

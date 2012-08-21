@@ -1,6 +1,9 @@
 .query_type{
 	display:none;
 }
+.chzn-select{
+	width:350px;
+}
 .left_half{
 	float:left;
 	width:50%;

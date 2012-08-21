@@ -61,8 +61,9 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			$post_status = $wp_query_factory->wp_query_param['post_status'];
 			$order = $wp_query_factory->wp_query_param['order'];
 			$orderby = $wp_query_factory->wp_query_param['orderby'];
+			$offset = isset($saved_arguments['offset']) ? $saved_arguments['offset'] : '';
 			
-			include parent::instance()->get_view('meta.query_builder', 'views-admin');
+			include parent::instance()->get_view('meta.query_builder');
 		}
 
 		public function template_tools( $post ){
@@ -142,7 +143,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 					));
 
 				// flush the transient it will be rebuilt on first call from the front
-				delete_transient( self::DOMAIN . '_' . $post_name );
+				delete_transient( self::TRANSIENT . '_' . $post_name );
 			}
 		}
 
