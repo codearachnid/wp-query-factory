@@ -84,6 +84,52 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	<label><input type="checkbox" name="query_builder[ignore_sticky_posts]" value="1" <?php checked(1, $saved_arguments['ignore_sticky_posts']); ?> /> <?php _e('Ignore sticky posts','wp-query-factory'); ?></label>
 	<p class="description"><?php _e("Return ALL posts within the set parameters of this query, but don't show sticky posts at the top. The 'sticky posts' will still show in their natural position (e.g. by date).", 'wp-query-factory'); ?></p>
 	<label><?php _e('Time', 'wp-query-factory'); ?></label><br />
+	<label><?php _e('Year', 'wp-query-factory'); ?></label> <input type="text" name="query_builder[year]" value="<?php echo $year; ?>" />
+	<br class="clear" />
+	<div class="left_half">
+		<select name="query_builder[monthnum]" data-placeholder="<?php _e('Select month', 'wp-query-factory'); ?>" class="chzn-select-deselect">
+			<option value></option>
+			<?php for($monthnum=1;$monthnum<13;$monthnum++) : ?>
+			<option value="<?php echo $monthnum; ?>" <?php selected($monthnum,$saved_arguments['monthnum']); ?>><?php echo date( 'F', mktime(0, 0, 0, $monthnum) ); ?></option>
+			<?php endfor; ?>
+		</select>
+		<select name="query_builder[day]" data-placeholder="<?php _e('Select day of the month', 'wp-query-factory'); ?>" class="chzn-select-deselect">
+			<option value=""></option>
+			<?php for($day=1;$day<32;$day++) : ?>
+			<option value="<?php echo $day; ?>" <?php selected($day,$saved_arguments['day']); ?>><?php printf( __('%s day of the month','wp-query-factory'), $this->ordinal($day)); ?></option>
+			<?php endfor; ?>
+		</select>
+		<select name="query_builder[hour]" data-placeholder="<?php _e('Select hour', 'wp-query-factory'); ?>" class="chzn-select-deselect">
+			<option value=""></option>
+			<?php for($hour=1;$hour<25;$hour++) : ?>
+			<option value="<?php echo $hour; ?>" <?php selected($hour,$saved_arguments['hour']); ?>><?php printf( __('%s hour','wp-query-factory'), $this->ordinal($hour)); ?></option>
+			<?php endfor; ?>
+		</select>
+		<select name="query_builder[minute]" data-placeholder="<?php _e('Select minute', 'wp-query-factory'); ?>" class="chzn-select-deselect">
+			<option value=""></option>
+			<?php for($minute=1;$minute<61;$minute++) : ?>
+			<option value="<?php echo $minute; ?>" <?php selected($minute,$saved_arguments['minute']); ?>><?php printf( __('%s minute','wp-query-factory'), $this->ordinal($minute)); ?></option>
+			<?php endfor; ?>
+		</select>
+		<select name="query_builder[second]" data-placeholder="<?php _e('Select second', 'wp-query-factory'); ?>" class="chzn-select-deselect">
+			<option value=""></option>
+			<?php for($second=1;$second<61;$second++) : ?>
+			<option value="<?php echo $second; ?>" <?php selected($second,$saved_arguments['second']); ?>><?php printf( __('%s second','wp-query-factory'), $this->ordinal($second)); ?></option>
+			<?php endfor; ?>
+		</select>
+	</div>
+	<div class="right_half">
+		<label><?php _e('OR', 'wp-query-factory'); ?></label>
+		<select name="query_builder[w]" data-placeholder="<?php _e('Select week of the year', 'wp-query-factory'); ?>" class="chzn-select-deselect">
+			<option value=""></option>
+			<?php for($w=1;$w<53;$w++) : ?>
+			<option value="<?php echo $w; ?>" <?php selected($w,$saved_arguments['w']); ?>><?php printf( __('%s week of the Year','wp-query-factory'), $this->ordinal($w)); ?></option>
+			<?php endfor; ?>
+		</select>
+		<p class="description"><?php _e('If this parameter is selected it will override (and unselect) regular date options in relation to filtering.','wp-query-factory'); ?></p>
+	</div>
+	<br class="clear" />
+	<p class="decription"><?php _e('Note: This parameter will return posts for a specific date period in history, i.e. "Posts from X year, X month, X day". They are unable to fetch posts from a timespan relative to the present, so queries like "Posts from the last 30 days" or "Posts from the last year" are not part of this query option.', 'wp-query-factory'); ?></p>
 	<label><?php _e('Custom Fields', 'wp-query-factory'); ?></label><br />
 	<label><?php _e('Permission', 'wp-query-factory'); ?></label><br />
 	<label><?php _e('Caching', 'wp-query-factory'); ?></label><br />

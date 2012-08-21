@@ -62,6 +62,10 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			$order = $wp_query_factory->wp_query_param['order'];
 			$orderby = $wp_query_factory->wp_query_param['orderby'];
 			$offset = isset($saved_arguments['offset']) ? $saved_arguments['offset'] : '';
+			$year = isset($saved_arguments['year']) ? $saved_arguments['year'] : '';
+
+			// setup ordinal formatting if I can figure out why PHP 5.3+ throws class not found err
+			// $ordinal = new NumberFormatter( (WPLANG != '') ? WPLANG : 'en_US', NumberFormatter::ORDINAL);
 			
 			include parent::instance()->get_view('meta.query_builder');
 		}
@@ -145,6 +149,10 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 				// flush the transient it will be rebuilt on first call from the front
 				delete_transient( self::TRANSIENT . '_' . $post_name );
 			}
+		}
+
+		public function ordinal($n) {
+			return $n . date('S',mktime(1,1,1,1,( (($n>=10)+($n>=20)+($n==0))*10 + $n%10) ));
 		}
 
 	    public function force_post_update( $post_id, $data = null ){

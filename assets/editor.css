@@ -1,7 +1,7 @@
 .query_type{
 	display:none;
 }
-.chzn-select{
+#meta_query_builder .inside select{
 	width:350px;
 }
 .left_half{
