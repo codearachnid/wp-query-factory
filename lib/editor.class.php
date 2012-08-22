@@ -69,20 +69,54 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			$saved_arguments = unserialize(base64_decode($post->post_content));
 			// echo '<pre>'; print_r($saved_arguments); echo '</pre>';
 
-			// setup defaults
+			// setup forced defaults from param
 			foreach($this->query_builder_default as $default ) {
 				$saved_arguments[$default] = isset($saved_arguments[$default]) ? $saved_arguments[$default] : (array) array_shift(array_values($wp_query_factory->wp_query_param[$default]));
 			}
 
+			// setup blank defaults
+			foreach(array_merge($this->query_builder_unset,array('author')) as $blank_default) {
+				$saved_arguments[$blank_default] = isset($saved_arguments[$blank_default]) ? $saved_arguments[$blank_default] : '';
+			}
+
 			// setup values
 			$query_types = $wp_query_factory->wp_query_param['query_type'];
-			$users = apply_filters( parent::DOMAIN . '_editor_users', get_users() );
+			$wp_list_users = array();
+			$wp_list_users_exclude = $wp_list_users;
+			foreach(get_users() as $user ) {
+				$wp_list_users[$user->ID] = $user->display_name;
+				$wp_list_users_exclude['-'.$user->ID] = $user->display_name;
+			}
+			$users = apply_filters( parent::DOMAIN . '_editor_users', $wp_list_users );
+			$exclude_users = apply_filters( parent::DOMAIN . '_editor_users_exclude', $wp_list_users_exclude );
 			$post_types = $wp_query_factory->wp_query_param['post_type'];
 			$post_status = $wp_query_factory->wp_query_param['post_status'];
 			$order = $wp_query_factory->wp_query_param['order'];
 			$orderby = $wp_query_factory->wp_query_param['orderby'];
 			$offset = isset($saved_arguments['offset']) ? $saved_arguments['offset'] : '';
 			$year = isset($saved_arguments['year']) ? $saved_arguments['year'] : '';
+			$monthnum = array();
+			for($i=1;$i<13;$i++){
+				$monthnum[$i] = date( 'F', mktime(0, 0, 0, $i) );
+			}
+			$day = array();
+			for($i=1;$i<32;$i++){
+				$day[$i] = $this->ordinal($i);
+			}
+			$hour = array();
+			for($i=1;$i<25;$i++){
+				$hour[$i] = $i;
+			}
+			$minute = array();
+			$second = array();
+			for($i=1;$i<61;$i++){
+				$minute[$i] = $i;
+				$second[$i] = $i;
+			}
+			$w = array();
+			for($i=1;$i<53;$i++){
+				$w[$i] = $this->ordinal($i);
+			}
 			$s = isset($saved_arguments['s']) ? $saved_arguments['s'] : '';
 
 			// setup ordinal formatting if I can figure out why PHP 5.3+ throws class not found err

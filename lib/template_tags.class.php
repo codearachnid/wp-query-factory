@@ -10,21 +10,27 @@ if( ! class_exists('WP_Query_Factory_Template_Tags') ) {
 
 		function __construct(){}
 		
-		public function select($data, $selected = null, $field_name = array(), $placeholder = '', $multiple = false, $deselect = false, $key_value = false ){
+		public function select($data, $selected = null, $field_name = array(), $placeholder = '', $deselect = true, $key_value = false, $classes = '' ){
+			$multiple = strpos(current($field_name),'[]') !== false ? true : false;
 			$field_name = !is_array($field_name) ? array($field_name=>$field_name) : $field_name;
-			echo '<select id="' . key($field_name) . '" name="' . current($field_name) . '" ';
+			echo '<select ';
+			echo !is_numeric(key($field_name)) ? 'id="' . key($field_name) . '" ' : '';
+			echo 'name="' . current($field_name) . '" ';
 			echo 'data-placeholder="' . $placeholder . '" ';
-			echo ($multiple) ? 'multiple ' : '';
-			echo '>';
+			echo 'class="';
+			echo ($deselect) ? 'chzn-select-deselect ' : '';
+			echo implode(" ", (array)$classes) . '" ';
+			echo ($multiple) ? 'multiple>' : '>';
+			echo ($deselect) ? '<option value></option>' : '';
 			foreach($data as $id => $row ) {
 				$val = ($key_value) ? $id : $row;
 				echo '<option value="' . $val . '" ';
-				if(strpos(current($field_name),'[]') !== false) {
+				if($multiple) {
 					selected( in_array($val, $selected) );
 				} else {
 					selected( $val, $selected );
 				}
-				echo '>' . $row . '</option>';
+				echo '>' . ucwords(str_replace('-', ' ', str_replace('_', ' ', $row))) . '</option>';
 			}
 			echo '</select>';
 		}

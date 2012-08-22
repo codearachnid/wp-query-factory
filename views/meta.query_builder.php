@@ -11,24 +11,16 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 
 <br />
 <label><?php _e('Query Type', 'wp-query-factory'); ?></label><br />
-<?php WP_Query_Factory_Template_Tags::select($query_types, $post->post_mime_type, array('query_type'=>'query_builder[query_type]'), __('Select type of query to create', 'wp-query-factory') ); ?>
+<?php WP_Query_Factory_Template_Tags::select($query_types, $post->post_mime_type, array('query_type'=>'query_builder[query_type]'), __('Select type of query to create', 'wp-query-factory'), false ); ?>
 <br class="clear" />
 <div id="WP_Query" class="query_type">
 	<fieldset>
 		<legend><?php _e('User', 'wp-query-factory'); ?></legend>
 		<div class="left_half">
-			<select name="query_builder[include_author][]" data-placeholder="<?php _e('Select users to include', 'wp-query-factory'); ?>" multiple tabindex="3">
-				<?php foreach($users as $user ) : ?>
-				<option value="<?php echo $user->ID; ?>" <?php selected( in_array($user->ID, $saved_arguments['author']) ); ?>><?php echo $user->display_name; ?></option>
-				<?php endforeach; ?>
-			</select>
+			<?php WP_Query_Factory_Template_Tags::select($users, $saved_arguments['author'], array('query_builder[include_author][]'), __('Select users to include', 'wp-query-factory'), true, true ); ?>
 		</div>
 		<div class="right_half">
-			<select name="query_builder[exclude_author][]" data-placeholder="<?php _e('Select users to exclude', 'wp-query-factory'); ?>" multiple tabindex="3">
-				<?php foreach($users as $user ) : ?>
-				<option value="-<?php echo $user->ID; ?>" <?php selected( in_array('-'.$user->ID, $saved_arguments['author']) ); ?>><?php echo $user->display_name; ?></option>
-				<?php endforeach; ?>
-			</select>
+			<?php WP_Query_Factory_Template_Tags::select($exclude_users, $saved_arguments['author'], array('query_builder[exclude_author][]'), __('Select users to exclude', 'wp-query-factory'), true, true ); ?>
 		</div>
 	</fieldset>
 	<br class="clear" />
@@ -39,19 +31,11 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	<br class="clear" />
 	<div class="left_half">
 		<label><?php _e('Type', 'wp-query-factory'); ?></label><br />
-		<select name="query_builder[post_type][]" data-placeholder="<?php _e('Select types to query', 'wp-query-factory'); ?>" multiple tabindex="3">
-			<?php foreach($post_types as $post_type ) : ?>
-			<option value="<?php echo $post_type; ?>" <?php selected( in_array($post_type, $saved_arguments['post_type']) ); ?>><?php echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $post_type))); ?></option>
-			<?php endforeach; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($post_types, $saved_arguments['post_type'], array('query_builder[post_type][]'), __('Select types to query', 'wp-query-factory')); ?>
 	</div>
 	<div class="right_half">
 		<label><?php _e('Status', 'wp-query-factory'); ?></label><br />
-		<select name="query_builder[post_status][]" data-placeholder="<?php _e('Select status to query', 'wp-query-factory'); ?>" multiple tabindex="3">
-		<?php foreach($post_status as $status ) : ?>
-			<option value="<?php echo $status; ?>" <?php selected( in_array($status, $saved_arguments['post_status']) ); ?>><?php echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $status))); ?></option>
-		<?php endforeach; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($post_status, $saved_arguments['post_status'], array('query_builder[post_type][]'), __('Select status to query', 'wp-query-factory')); ?>
 		<p class="description"><?php _e("NOTE: 'Any' - retrieves any status except those from post types with 'exclude_from_search' set to true.", 'wp-query-factory'); ?></p>
 	</div>
 	<br class="clear" />
@@ -61,21 +45,11 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	<br class="clear" />
 	<div class="left_half">
 		<label><?php _e('Order', 'wp-query-factory'); ?></label><br />
-		<select name="query_builder[order]" data-placeholder="<?php _e('Order query', 'wp-query-factory'); ?>" class="chzn-select-deselect">
-			<option value></option>
-			<?php foreach($order as $order_type ) : ?>
-			<option value="<?php echo $order_type; ?>" <?php selected( in_array($order_type, $saved_arguments['order']) ); ?>><?php echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $order_type))); ?></option>
-			<?php endforeach; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($order, $saved_arguments['order'], array('query_builder[order]'), __('Order query', 'wp-query-factory')); ?>
 	</div>
 	<div class="right_half">
 		<label><?php _e('Order By', 'wp-query-factory'); ?></label><br />
-		<select name="query_builder[orderby]" data-placeholder="<?php _e('Select status to query', 'wp-query-factory'); ?>" class="chzn-select-deselect">
-			<option value></option>
-		<?php foreach($orderby as $orderby_type ) : ?>
-			<option value="<?php echo $orderby_type; ?>" <?php selected( in_array($orderby_type, $saved_arguments['orderby']) ); ?>><?php echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $orderby_type))); ?></option>
-		<?php endforeach; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($orderby, $saved_arguments['orderby'], array('query_builder[orderby]'), __('Order by field', 'wp-query-factory')); ?>
 	</div>
 	<br class="clear" />
 	<label><?php _e('Sticky Post', 'wp-query-factory'); ?></label><br />
@@ -85,49 +59,19 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	<label><?php _e('Year', 'wp-query-factory'); ?></label> <input type="text" name="query_builder[year]" value="<?php echo $year; ?>" />
 	<br class="clear" />
 	<div class="left_twothird_half">
-		<select name="query_builder[monthnum]" data-placeholder="<?php _e('Month', 'wp-query-factory'); ?>" class="month chzn-select-deselect">
-			<option value></option>
-			<?php for($monthnum=1;$monthnum<13;$monthnum++) : ?>
-			<option value="<?php echo $monthnum; ?>" <?php selected($monthnum,$saved_arguments['monthnum']); ?>><?php echo date( 'F', mktime(0, 0, 0, $monthnum) ); ?></option>
-			<?php endfor; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($monthnum, $saved_arguments['monthnum'], array('query_builder[monthnum]'), __('Month', 'wp-query-factory'), true, true, 'month'); ?>
 		<span class="timespacer">|</span>
-		<select name="query_builder[day]" data-placeholder="<?php _e('Day', 'wp-query-factory'); ?>" class="day chzn-select-deselect">
-			<option value></option>
-			<?php for($day=1;$day<32;$day++) : ?>
-			<option value="<?php echo $day; ?>" <?php selected($day,$saved_arguments['day']); ?>><?php printf( __('%s','wp-query-factory'), $this->ordinal($day)); ?></option>
-			<?php endfor; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($day, $saved_arguments['day'], array('query_builder[day]'), __('Day', 'wp-query-factory'), true, true, 'day'); ?>
 		<span class="timespacer">|</span>
-		<select name="query_builder[hour]" data-placeholder="<?php _e('Hour', 'wp-query-factory'); ?>" class="time chzn-select-deselect">
-			<option value></option>
-			<?php for($hour=1;$hour<25;$hour++) : ?>
-			<option value="<?php echo $hour; ?>" <?php selected($hour,$saved_arguments['hour']); ?>><?php echo $hour; ?></option>
-			<?php endfor; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($hour, $saved_arguments['hour'], array('query_builder[hour]'), __('Hour', 'wp-query-factory'), true, true, 'time'); ?>
 		<span class="timespacer">:</span>
-		<select name="query_builder[minute]" data-placeholder="<?php _e('Minute', 'wp-query-factory'); ?>" class="time chzn-select-deselect">
-			<option value></option>
-			<?php for($minute=1;$minute<61;$minute++) : ?>
-			<option value="<?php echo $minute; ?>" <?php selected($minute,$saved_arguments['minute']); ?>><?php echo $minute; ?></option>
-			<?php endfor; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($minute, $saved_arguments['minute'], array('query_builder[minute]'), __('Minute', 'wp-query-factory'), true, true, 'time'); ?>
 		<span class="timespacer">:</span>
-		<select name="query_builder[second]" data-placeholder="<?php _e('Second', 'wp-query-factory'); ?>" class="time chzn-select-deselect">
-			<option value></option>
-			<?php for($second=1;$second<61;$second++) : ?>
-			<option value="<?php echo $second; ?>" <?php selected($second,$saved_arguments['second']); ?>><?php echo $second; ?></option>
-			<?php endfor; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($second, $saved_arguments['second'], array('query_builder[second]'), __('Second', 'wp-query-factory'), true, true, 'time'); ?>
 	</div>
 	<div class="right_third_half">
 		<label><?php _e('OR', 'wp-query-factory'); ?></label>
-		<select name="query_builder[w]" data-placeholder="<?php _e('Select week of the year', 'wp-query-factory'); ?>" class="week chzn-select-deselect">
-			<option value></option>
-			<?php for($w=1;$w<53;$w++) : ?>
-			<option value="<?php echo $w; ?>" <?php selected($w,$saved_arguments['w']); ?>><?php printf( __('%s week of the Year','wp-query-factory'), $this->ordinal($w)); ?></option>
-			<?php endfor; ?>
-		</select>
+		<?php WP_Query_Factory_Template_Tags::select($w, $saved_arguments['w'], array('query_builder[w]'), __('Select week of the year', 'wp-query-factory'), true, true, 'week'); ?>
 		<p class="description"><?php _e('If this parameter is selected it will override (and unselect) regular date options in relation to filtering.','wp-query-factory'); ?></p>
 	</div>
 	<br class="clear" />
