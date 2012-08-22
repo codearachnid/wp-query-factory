@@ -43,20 +43,20 @@ if( ! class_exists('WP_Query_Factory_Shortcode') ) {
 			), $atts ) );
 
 		$wp_query = parent::query( $id );
+		$load_template = $wp_query->default_template;
+		$wp_query_factory = parent::instance();
 
 		ob_start();
-		echo '<pre>';
-		var_dump($wp_query->args);
-		echo '</pre>';
-		if( count($wp_query->results) > 0 ) {
+		// echo '<pre>';
+		// var_dump($wp_query->args);
+		// echo '</pre>';
+		if( !empty($load_template) && file_exists($wp_query_factory->get_template( $load_template )) && count($wp_query->results) > 0 ) {
 			global $post;
-			// $wp_query_factory = parent::instance();
 			$request_page_id = get_the_ID();
 			foreach( $wp_query->results as $post ) {
 				setup_postdata($post);
 				$post->request_page_id = $request_page_id;
-				// the_content();
-				include parent::instance()->get_template( 'default-template' );
+				include $wp_query_factory->get_template( $load_template );
 			}
 			wp_reset_postdata();
 		}

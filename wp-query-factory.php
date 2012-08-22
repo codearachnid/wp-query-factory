@@ -127,6 +127,7 @@ if( ! class_exists('WP_Query_Factory') ) {
       $wp_query_factory->ID = $query_factory->ID;
       $wp_query_factory->args = $query_factory->args; 
       $wp_query_factory->query_type = $query_factory->post_mime_type;
+      $wp_query_factory->default_template = $query_factory->post_password;
       
       $args = wp_parse_args( $args, $wp_query_factory->args );
       switch( $wp_query_factory->query_type ) {

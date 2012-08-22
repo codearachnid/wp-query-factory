@@ -92,10 +92,10 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 		}
 
 		public function template_tools( $post ){
-			echo 'template_tools';
+			include parent::instance()->get_view('meta.template_tools');
 		}
 
-		public function template_help( $post ) {
+		public function template_assistance( $post ) {
 			include parent::instance()->get_view('meta.template_assistance');
 		}
 		public function template_attributes( $post ) {
@@ -147,6 +147,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 							// die;
 
 							$post_name = sanitize_title($_POST['query_builder']['post_name']);
+							$default_template = isset($_POST['template_tools']['default_template']) && !is_null($_POST['template_tools']['default_template']) ? $_POST['template_tools']['default_template'] : '';
 							$query_type = in_array( $_POST['query_builder']['query_type'], $wp_query_factory->wp_query_param['query_type']) ? $_POST['query_builder']['query_type'] : null;
 
 							switch( $query_type ) {
@@ -186,7 +187,8 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 							$this->force_post_update( $post_id , array(
 								'post_name' => $post_name,
 								'post_content' => $post_content,
-								'post_mime_type' => $query_type
+								'post_mime_type' => $query_type,
+								'post_password' => $default_template
 								));
 
 							// flush the transient it will be rebuilt on first call from the front
