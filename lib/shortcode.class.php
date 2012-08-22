@@ -43,15 +43,16 @@ if( ! class_exists('WP_Query_Factory_Shortcode') ) {
 			), $atts ) );
 
 		$wp_query = parent::query( $id );
-		$load_template = $wp_query->default_template;
+		$load_template = !is_null($wp_query) ? $wp_query->default_template : null;
 		$wp_query_factory = parent::instance();
 
 		ob_start();
 		// echo '<pre>';
 		// var_dump($wp_query->args);
 		// echo '</pre>';
-		if( !empty($load_template) && file_exists($wp_query_factory->get_template( $load_template )) && count($wp_query->results) > 0 ) {
+		if( !empty($load_template) && $wp_query_factory->get_template( $load_template ) && count($wp_query->results) > 0 ) {
 			global $post;
+			wp_enqueue_style(parent::DOMAIN . '-front-css', $wp_query_factory->base_url . 'assets/front.css');
 			$request_page_id = get_the_ID();
 			foreach( $wp_query->results as $post ) {
 				setup_postdata($post);

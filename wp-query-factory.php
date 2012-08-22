@@ -113,6 +113,9 @@ if( ! class_exists('WP_Query_Factory') ) {
           );
         $query_factory = new WP_Query( $factory_args );
 
+        if( empty($query_factory->posts))
+          return null;
+
         $query_factory = $query_factory->posts[0];
         $query_factory->args = unserialize(base64_decode($query_factory->post_content));
 
@@ -120,9 +123,8 @@ if( ! class_exists('WP_Query_Factory') ) {
         set_transient( self::TRANSIENT . '_' . $query_id, $query_factory );
       }
 
-      if( empty($query_factory)) {
+      if( !isset($query_factory->ID))
         return null;
-      }
 
       $wp_query_factory->ID = $query_factory->ID;
       $wp_query_factory->args = $query_factory->args; 
@@ -194,8 +196,13 @@ if( ! class_exists('WP_Query_Factory') ) {
       $this->wp_query_param['orderby'] = apply_filters( self::DOMAIN . '-wp_query_param-orderby', array('date','ID','author','title','modified','parent','rand','comment_count','menu_order','meta_value','meta_value_num','none'));
     }
 
+
     public function exclude_factory_types( $post_type ){
       return ! in_array($post_type, array(self::FACTORY_TYPE, self::FACTORY_TEMPLATE));
+    }
+
+    public function check_factory_types( $post_type ){
+      return in_array($post_type, array(self::FACTORY_TYPE, self::FACTORY_TEMPLATE));
     }
 
     /**
@@ -292,8 +299,26 @@ if( ! class_exists('WP_Query_Factory') ) {
       return apply_filters( self::DOMAIN . '_' . $template, $file);
     }
 
-    public function get_template( $template ){
-      return self::get_view( $template, 'templates');
+    public function get_template( $template, $create = true ){
+      if(is_null($template))
+        return false;
+      $t = self::get_view( $template, 'templates');
+      if( !$create )
+        return $t;
+      if(!file_exists($t)) {
+        // look to generate template file if it exists
+        $args = array(
+          'name' => $template,
+          'post_type' => self::FACTORY_TEMPLATE,
+          'posts_per_page' => 1
+          );
+        $template_query = new WP_Query($args);
+        if(empty($template_query->posts))
+          return false;
+        $t = self::get_view( $template, 'templates');
+        file_put_contents( $t, WP_Query_Factory_Editor::generate_template( $template_query->posts[0]->ID, $template_query->posts[0]->post_content ) );
+      }
+      return $t;
     }
     /**
      * Check that the minimum PHP and WP versions are met
