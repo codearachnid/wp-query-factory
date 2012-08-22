@@ -188,7 +188,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 								'post_name' => $post_name,
 								'post_content' => $post_content,
 								'post_mime_type' => $query_type,
-								'post_password' => $default_template
+								'to_ping' => $default_template
 								));
 
 							// flush the transient it will be rebuilt on first call from the front
