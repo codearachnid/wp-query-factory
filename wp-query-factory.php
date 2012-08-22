@@ -196,6 +196,16 @@ if( ! class_exists('WP_Query_Factory') ) {
       $this->wp_query_param['orderby'] = apply_filters( self::DOMAIN . '-wp_query_param-orderby', array('date','ID','author','title','modified','parent','rand','comment_count','menu_order','meta_value','meta_value_num','none'));
     }
 
+    public function available_templates( $args = array()){
+      $defaults = array(
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'post_type' => self::FACTORY_TEMPLATE
+        );
+      $args = wp_parse_args( $args, $defaults );
+      $templates = new WP_Query($args);
+      return apply_filters(self::DOMAIN.'-available_templates', $templates->posts);
+    }
 
     public function exclude_factory_types( $post_type ){
       return ! in_array($post_type, array(self::FACTORY_TYPE, self::FACTORY_TEMPLATE));
@@ -316,7 +326,7 @@ if( ! class_exists('WP_Query_Factory') ) {
         if(empty($template_query->posts))
           return false;
         $t = self::get_view( $template, 'templates');
-        file_put_contents( $t, WP_Query_Factory_Editor::generate_template( $template_query->posts[0]->ID, $template_query->posts[0]->post_content ) );
+        file_put_contents( $t, WP_Query_Factory_Editor::generate_template( $template_query->posts[0]->post_content ) );
       }
       return $t;
     }
