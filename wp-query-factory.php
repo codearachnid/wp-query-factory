@@ -40,7 +40,10 @@ if( ! class_exists('WP_Query_Factory') ) {
 
     protected static $instance;
 
+    const PLUGIN_NAME = 'WP Query Factory';
     const VERSION = 1.0;
+    const MIN_PHP_VERSION = '5.3';
+    const MIN_WP_VERSION = '3.3';
     const TRANSIENT = 'WPQF';
     const DOMAIN = 'wp_query_factory';
     const FACTORY_TYPE = 'wp-query-factory';
@@ -50,6 +53,7 @@ if( ! class_exists('WP_Query_Factory') ) {
     public $base_path;
     public $base_name;
     public $wp_query_param;
+    public $request_page_id = 0;
 
     private $post_type_args = array(
         'public' => true,
@@ -63,21 +67,22 @@ if( ! class_exists('WP_Query_Factory') ) {
         'hierarchical' => false,
         'supports' => array( 'title' )
       );
-
-    function __construct() {
+    function __construct(){
       // Setup common access properties
       $this->base_path = plugin_dir_path( __FILE__ );
       $this->base_url = plugin_dir_url( __FILE__ );
       $this->base_name = plugin_basename( __FILE__ );
       $this->setup_wp_query_param();
 
+      do_action(self::DOMAIN);
+
       add_action( 'init', array( $this, 'register_framework' ) );
-      add_filter( 'user_can_richedit', array( $this, 'disable_richedit') );
-      add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts') );
       add_action( 'admin_menu', array( $this, 'admin_menu' ) );
       add_action( 'admin_bar_menu', array($this, 'admin_bar_menu' ), 100 );
       add_filter( 'post_updated_messages', array( $this, 'override_confirmation_messages') );
     }
+
+    public static function init() {}
 
     public function admin_menu() {
       // add_submenu_page( 'edit.php?post_type=' . self::FACTORY_TYPE, __('WP Query Factory Help', 'wp-query-factory'), __('Help', 'wp-query-factory'), 'manage_options', self::FACTORY_TYPE . '-help', array( $this, 'help' ));
@@ -142,6 +147,17 @@ if( ! class_exists('WP_Query_Factory') ) {
       return $wp_query_factory;
     }
 
+    public function the_content($request_id = null, $more_link_text = null, $stripteaser = false) {
+      global $post;
+      $content = get_the_content($more_link_text, $stripteaser);
+      // we can't apply 'the_content' filters if the current page is the same as the result from the 
+      // query because it throws WordPress into an infinite loop thus any shortcodes are then not 
+      // "run" on the current result
+      $content = ($post->request_page_id != get_the_ID()) ? apply_filters('the_content', $content) : $content;
+      $content = str_replace(']]>', ']]&gt;', $content);
+      echo $content;
+    }
+
     public function register_framework() {
       // register wp-query-factory
       $args = wp_parse_args( array(
@@ -179,23 +195,6 @@ if( ! class_exists('WP_Query_Factory') ) {
 
     public function exclude_factory_types( $post_type ){
       return ! in_array($post_type, array(self::FACTORY_TYPE, self::FACTORY_TEMPLATE));
-    }
-
-    // prevent wysiwyg rich editor from showing for templates
-    public function disable_richedit($c) {
-        global $post_type;
-        // if ( in_array( $post_type, array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE) ) ) {
-        if( ! $this->exclude_factory_types( $post_type ) ) {
-          return false;
-        }
-        return $c;
-    }
-
-    // prevent autosaves on plugin post types (prevents live results from changing during edit)
-    public function enqueue_scripts() {
-        // if ( in_array( get_post_type(), array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE)) )
-        if( ! $this->exclude_factory_types( get_post_type() ) )
-            wp_dequeue_script( 'autosave' );
     }
 
     /**
@@ -292,6 +291,28 @@ if( ! class_exists('WP_Query_Factory') ) {
       return apply_filters( self::DOMAIN . '_' . $template, $file);
     }
 
+    public function get_template( $template ){
+      return self::get_view( $template, 'templates');
+    }
+    /**
+     * Check that the minimum PHP and WP versions are met
+     *
+     * @static
+     * @param string $php_version
+     * @param string $wp_version
+     * @return bool Whether the test passed
+     */
+    public static function prerequisites( $php_version, $wp_version ) {
+      $pass = TRUE;
+      $pass = $pass && version_compare( $php_version, self::MIN_PHP_VERSION, '>=');
+      $pass = $pass && version_compare( $wp_version, self::MIN_WP_VERSION, '>=');
+      return $pass;
+    }
+
+    public function fail_notices( $php_version = self::MIN_PHP_VERSION, $wp_version = self::MIN_WP_VERSION ) {
+      printf( '<div class="error"><p>%s</p></div>', sprintf( self::__( '%1$s requires WordPress %2$s or higher and PHP %3$s or higher.' ), self::PLUGIN_NAME, $wp_version, $php_version ) );
+    }
+
     /* Static Singleton Factory Method */
     public static function instance() {
       if ( !isset( self::$instance ) ) {
@@ -308,16 +329,19 @@ if( ! class_exists('WP_Query_Factory') ) {
    * @return void
    */
   function Load_WP_Query_Factory() {
-    $run_or_not = class_exists( 'WP_Query_Factory' ) && defined( 'WP_Query_Factory::DOMAIN' );
-    if ( apply_filters( 'wp_query_factory_run_or_not', $run_or_not ) ) {
-      $wp_query_factory = WP_Query_Factory::instance();
+    if ( apply_filters( 'wp_query_factory_pre_check', class_exists( 'WP_Query_Factory' ) && WP_Query_Factory::prerequisites(phpversion(), get_bloginfo('version')) ) ) {
+      // Load all supporting files and hook into WordPress
+      include 'lib/template_tags.class.php';
+      include 'lib/editor.class.php';
+      include 'lib/shortcode.class.php';
+      add_action('init', array('WP_Query_Factory', 'instance'), -100, 0);      
+      add_action(WP_Query_Factory::DOMAIN, array('WP_Query_Factory_Template_Tags', 'instance'), 0, 0);
+      add_action(WP_Query_Factory::DOMAIN, array('WP_Query_Factory_Editor', 'instance'), 0, 0);
+      add_action(WP_Query_Factory::DOMAIN, array('WP_Query_Factory_Shortcode', 'instance'), 2, 0);
 
-      include $wp_query_factory->base_path . 'lib/editor.class.php';
-      $wp_query_factory_editor = new WP_Query_Factory_Editor();
-
-      include $wp_query_factory->base_path . 'lib/shortcode.class.php';
-      $wp_query_factory_shortcode = new WP_Query_Factory_Shortcode();
-
+    } else {
+      // let the user know prerequisites weren't met
+      add_action('admin_head', array('WP_Query_Factory', 'fail_notices'), 0, 0);
     }
   }
   add_action( 'plugins_loaded', 'Load_WP_Query_Factory', 1); // high priority so that it's not too late for addon overrides

@@ -11,11 +11,7 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 
 <br />
 <label><?php _e('Query Type', 'wp-query-factory'); ?></label><br />
-<select id="query_type" name="query_builder[query_type]" data-placeholder="<?php _e('Select type of query to create', 'wp-query-factory'); ?>" tabindex="3">
-	<?php foreach($query_types as $query_type ) : ?>
-	<option value="<?php echo $query_type; ?>" <?php selected( $query_type, $post->post_mime_type ); ?>><?php echo $query_type; ?></option>
-	<?php endforeach; ?>
-</select>
+<?php WP_Query_Factory_Template_Tags::select($query_types, $post->post_mime_type, array('query_type'=>'query_builder[query_type]'), __('Select type of query to create', 'wp-query-factory') ); ?>
 <br class="clear" />
 <div id="WP_Query" class="query_type">
 	<fieldset>
@@ -65,7 +61,8 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	<br class="clear" />
 	<div class="left_half">
 		<label><?php _e('Order', 'wp-query-factory'); ?></label><br />
-		<select name="query_builder[order]" data-placeholder="<?php _e('Order query', 'wp-query-factory'); ?>" tabindex="3">
+		<select name="query_builder[order]" data-placeholder="<?php _e('Order query', 'wp-query-factory'); ?>" class="chzn-select-deselect">
+			<option value></option>
 			<?php foreach($order as $order_type ) : ?>
 			<option value="<?php echo $order_type; ?>" <?php selected( in_array($order_type, $saved_arguments['order']) ); ?>><?php echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $order_type))); ?></option>
 			<?php endforeach; ?>
@@ -73,7 +70,8 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	</div>
 	<div class="right_half">
 		<label><?php _e('Order By', 'wp-query-factory'); ?></label><br />
-		<select name="query_builder[orderby]" data-placeholder="<?php _e('Select status to query', 'wp-query-factory'); ?>" tabindex="3">
+		<select name="query_builder[orderby]" data-placeholder="<?php _e('Select status to query', 'wp-query-factory'); ?>" class="chzn-select-deselect">
+			<option value></option>
 		<?php foreach($orderby as $orderby_type ) : ?>
 			<option value="<?php echo $orderby_type; ?>" <?php selected( in_array($orderby_type, $saved_arguments['orderby']) ); ?>><?php echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $orderby_type))); ?></option>
 		<?php endforeach; ?>
@@ -93,28 +91,30 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 			<option value="<?php echo $monthnum; ?>" <?php selected($monthnum,$saved_arguments['monthnum']); ?>><?php echo date( 'F', mktime(0, 0, 0, $monthnum) ); ?></option>
 			<?php endfor; ?>
 		</select>
+		<span class="timespacer">|</span>
 		<select name="query_builder[day]" data-placeholder="<?php _e('Day', 'wp-query-factory'); ?>" class="day chzn-select-deselect">
-			<option value=""></option>
+			<option value></option>
 			<?php for($day=1;$day<32;$day++) : ?>
 			<option value="<?php echo $day; ?>" <?php selected($day,$saved_arguments['day']); ?>><?php printf( __('%s','wp-query-factory'), $this->ordinal($day)); ?></option>
 			<?php endfor; ?>
 		</select>
+		<span class="timespacer">|</span>
 		<select name="query_builder[hour]" data-placeholder="<?php _e('Hour', 'wp-query-factory'); ?>" class="time chzn-select-deselect">
-			<option value=""></option>
+			<option value></option>
 			<?php for($hour=1;$hour<25;$hour++) : ?>
 			<option value="<?php echo $hour; ?>" <?php selected($hour,$saved_arguments['hour']); ?>><?php echo $hour; ?></option>
 			<?php endfor; ?>
 		</select>
 		<span class="timespacer">:</span>
 		<select name="query_builder[minute]" data-placeholder="<?php _e('Minute', 'wp-query-factory'); ?>" class="time chzn-select-deselect">
-			<option value=""></option>
+			<option value></option>
 			<?php for($minute=1;$minute<61;$minute++) : ?>
 			<option value="<?php echo $minute; ?>" <?php selected($minute,$saved_arguments['minute']); ?>><?php echo $minute; ?></option>
 			<?php endfor; ?>
 		</select>
 		<span class="timespacer">:</span>
 		<select name="query_builder[second]" data-placeholder="<?php _e('Second', 'wp-query-factory'); ?>" class="time chzn-select-deselect">
-			<option value=""></option>
+			<option value></option>
 			<?php for($second=1;$second<61;$second++) : ?>
 			<option value="<?php echo $second; ?>" <?php selected($second,$saved_arguments['second']); ?>><?php echo $second; ?></option>
 			<?php endfor; ?>
@@ -123,7 +123,7 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	<div class="right_third_half">
 		<label><?php _e('OR', 'wp-query-factory'); ?></label>
 		<select name="query_builder[w]" data-placeholder="<?php _e('Select week of the year', 'wp-query-factory'); ?>" class="week chzn-select-deselect">
-			<option value=""></option>
+			<option value></option>
 			<?php for($w=1;$w<53;$w++) : ?>
 			<option value="<?php echo $w; ?>" <?php selected($w,$saved_arguments['w']); ?>><?php printf( __('%s week of the Year','wp-query-factory'), $this->ordinal($w)); ?></option>
 			<?php endfor; ?>

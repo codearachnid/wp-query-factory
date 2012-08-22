@@ -6,19 +6,24 @@ if ( !defined('ABSPATH') )
 if( ! class_exists('WP_Query_Factory_Editor') ) {
 	class WP_Query_Factory_Editor extends WP_Query_Factory {
 
+		protected static $instance;
+
 		public $query_builder_default;
 		public $query_builder_unset;
 
 		function __construct() {
 			add_action( 'admin_menu', array( $this, 'add_meta_box' ));
-			add_action( 'save_post', array( $this, 'save_meta_box' ));
+			add_action( 'save_post', array( $this, 'save_post' ));
+			add_filter( 'user_can_richedit', array( $this, 'disable_richedit') );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts') );
 
-			$this->query_builder_unset = apply_filters( parent::DOMAIN . '-query_builder_unset', array('post_name','query_type','include_author','exclude_author'));
-			$this->query_builder_default =  apply_filters( parent::DOMAIN . '-query_builder_default', array('post_type','post_status','order','orderby'));
+			add_action( 'wp_ajax_' . parent::DOMAIN . '_lookup', array( $this,'ajax_lookup' ) );
+
+			$this->query_builder_unset = apply_filters( parent::DOMAIN . '-query_builder_unset', array('post_name','query_type','include_author','exclude_author','offset','order','orderby','year','monthnum','day','hour','minute','second','w','s'));
+			$this->query_builder_default =  apply_filters( parent::DOMAIN . '-query_builder_default', array('post_type','post_status'));
 		}
 
 		public function add_meta_box(){
-
 			wp_enqueue_style( parent::DOMAIN . '-chosen', parent::instance()->base_url . 'assets/chosen/chosen.css' );
 			wp_enqueue_script( parent::DOMAIN . '-chosen', parent::instance()->base_url . 'assets/chosen/chosen.jquery.min.js', array('jquery'));
 			wp_enqueue_style( parent::DOMAIN . '-editor', parent::instance()->base_url . 'assets/editor.css');
@@ -38,6 +43,21 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 				parent::FACTORY_TYPE, 
 				'normal',
 				'high'
+				);
+
+			add_meta_box(
+				'meta_template_assistance', 
+				__('Help','wp-query-factory'), 
+				array( $this, 'template_assistance' ), 
+				parent::FACTORY_TEMPLATE, 
+				'side'
+				);
+			add_meta_box(
+				'meta_template_attributes', 
+				__('Template Attributes','wp-query-factory'), 
+				array( $this, 'template_attributes' ), 
+				parent::FACTORY_TEMPLATE, 
+				'side'
 				);
 		}
 
@@ -75,7 +95,26 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			echo 'template_tools';
 		}
 
-		function save_meta_box( $post_id ) {
+		public function template_help( $post ) {
+			include parent::instance()->get_view('meta.template_assistance');
+		}
+		public function template_attributes( $post ) {
+			include parent::instance()->get_view('meta.template_attributes');
+		}
+
+		public function ajax_lookup(){
+			$term = trim($_REQUEST['term']);
+			$presenters = array();
+			foreach(self::search_presenters($term) as $presenter) {
+				$presenters[]= array($presenter->data->ID, $presenter->data->display_name);
+			}
+
+			echo json_encode($presenters);
+			exit;
+		}
+
+		public function save_post( $post_id ){
+
 			// Verify if this is an auto save routine. 
 			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) 
 			  return;
@@ -97,60 +136,106 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 				    return;
 			}
 
-			$wp_query_factory = parent::instance();
+			//verify post is not a revision
+			if ( !wp_is_post_revision( $post_id ) ) {
+				$wp_query_factory = parent::instance();
+				switch( $_POST['post_type'] ) {
+					case parent::FACTORY_TYPE:
+						if( isset($_POST['query_builder'])) {
 
-			if( isset($_POST['query_builder'])) {
+							// print_r($_POST['query_builder']);
+							// die;
 
-				// print_r($_POST['query_builder']);
-				// die;
+							$post_name = sanitize_title($_POST['query_builder']['post_name']);
+							$query_type = in_array( $_POST['query_builder']['query_type'], $wp_query_factory->wp_query_param['query_type']) ? $_POST['query_builder']['query_type'] : null;
 
-				$post_name = sanitize_title($_POST['query_builder']['post_name']);
-				$query_type = in_array( $_POST['query_builder']['query_type'], $wp_query_factory->wp_query_param['query_type']) ? $_POST['query_builder']['query_type'] : null;
+							switch( $query_type ) {
+								case 'WP_User_Query':
+									break;
+								default:
+									
+									// protect blank query from lack of field value with default
+									foreach($this->query_builder_default as $default ) {
+										$_POST['query_builder'][$default] = isset($_POST['query_builder'][$default]) ? $_POST['query_builder'][$default] : (array) array_shift(array_values($wp_query_factory->wp_query_param[$default]));
+									}
 
-				switch( $query_type ) {
-					case 'WP_User_Query':
+									// prevent a blank author filter from existing
+									if( !empty($_POST['query_builder']['include_author']) && !empty($_POST['query_builder']['exclude_author'])) {
+										$_POST['query_builder']['author'] = array_merge( (array)$_POST['query_builder']['include_author'], (array)$_POST['query_builder']['exclude_author']);
+									} elseif( isset($_POST['query_builder']['include_author']) ) {
+										$_POST['query_builder']['author'] = (array)$_POST['query_builder']['include_author'];
+									} elseif( isset($_POST['query_builder']['exclude_author']) ) {
+										$_POST['query_builder']['author'] = (array)$_POST['query_builder']['exclude_author'];
+									}
+
+									// print_r($_POST['query_builder']);
+									// die;
+
+									foreach($this->query_builder_unset  as $unset) {
+										unset($_POST['query_builder'][$unset]);
+									}
+
+									// print_r($_POST['query_builder']);
+									// die;
+									
+									$post_content = base64_encode(serialize($_POST['query_builder']));
+								break;
+							}
+
+							// Force post_content to be set outside of save_post loop
+							$this->force_post_update( $post_id , array(
+								'post_name' => $post_name,
+								'post_content' => $post_content,
+								'post_mime_type' => $query_type
+								));
+
+							// flush the transient it will be rebuilt on first call from the front
+							delete_transient( self::TRANSIENT . '_' . $post_name );
+						}
+						break;
+					case parent::FACTORY_TEMPLATE:
+
+						// print_r($_POST);
+						// die;
+
+						// we break WordPress if 'the_content(%)' is in the template because it's being called inside the_content()
+						$content = str_replace('the_content(', 'WP_Query_Factory::the_content(', stripslashes($_POST['post_content']));
+						// $content = stripslashes($_POST['post_content']);
+
+						$t = '<?php if ( !defined("ABSPATH") ) die("-1");' . "\n" .
+							'/* GENERATED BY "' . parent::FACTORY_TYPE . '" on: ' . date(DATE_RFC822) . ' */ ?>' . "\n" .
+							'<div class="' . implode(" ", get_post_class('',$_POST['post_ID'])) . '">' . "\n" .
+							$content .
+							'</div>';
+						$file = $wp_query_factory->get_template( $_POST['post_name'] );
+
+						// save template to file system
+						file_put_contents( $file, $t );
+
 						break;
 					default:
-						
-						// protect blank query from lack of field value with default
-						foreach($this->query_builder_default as $default ) {
-							$_POST['query_builder'][$default] = isset($_POST['query_builder'][$default]) ? $_POST['query_builder'][$default] : (array) array_shift(array_values($wp_query_factory->wp_query_param[$default]));
-						}
-
-						// prevent a blank author filter from existing
-						if( !empty($_POST['query_builder']['include_author']) && !empty($_POST['query_builder']['exclude_author'])) {
-							$_POST['query_builder']['author'] = array_merge( (array)$_POST['query_builder']['include_author'], (array)$_POST['query_builder']['exclude_author']);
-						} elseif( isset($_POST['query_builder']['include_author']) ) {
-							$_POST['query_builder']['author'] = (array)$_POST['query_builder']['include_author'];
-						} elseif( isset($_POST['query_builder']['exclude_author']) ) {
-							$_POST['query_builder']['author'] = (array)$_POST['query_builder']['exclude_author'];
-						}
-
-						// print_r($_POST['query_builder']);
-						// die;
-
-						foreach($this->query_builder_unset  as $unset) {
-							unset($_POST['query_builder'][$unset]);
-						}
-
-						// print_r($_POST['query_builder']);
-						// die;
-						
-						$post_content = base64_encode(serialize($_POST['query_builder']));
-					break;
+						// ignore for all other post types
+						break;
 				}
-
-				// Force post_content to be set outside of save_post loop
-				$this->force_post_update( $post_id , array(
-					'post_name' => $post_name,
-					'post_content' => $post_content,
-					'post_mime_type' => $query_type
-					));
-
-				// flush the transient it will be rebuilt on first call from the front
-				delete_transient( self::TRANSIENT . '_' . $post_name );
 			}
 		}
+
+	    // prevent wysiwyg rich editor from showing for templates
+	    public function disable_richedit($c) {
+	        global $post_type;
+	        // if ( in_array( $post_type, array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE) ) ) {
+	        if( ! parent::exclude_factory_types( $post_type ) ) {
+	          return false;
+	        }
+	        return $c;
+	    }
+
+	    // prevent autosaves on plugin post types (prevents live results from changing during edit)
+	    public function enqueue_scripts() {
+	        // if ( in_array( get_post_type(), array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE)) )
+	        if( ! parent::exclude_factory_types( get_post_type() ) )
+	            wp_dequeue_script( 'autosave' );
+	    }
 
 		public function ordinal($n) {
 			return $n . date('S',mktime(1,1,1,1,( (($n>=10)+($n>=20)+($n==0))*10 + $n%10) ));
@@ -162,6 +247,14 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 		    	$wpdb->update($wpdb->posts, $data, array(  'ID' => $post_id ));
 		    }
 	    }
-
+	    
+		/* Static Singleton Factory Method */
+		public static function instance() {
+		  if ( !isset( self::$instance ) ) {
+		    $className = __CLASS__;
+		    self::$instance = new $className;
+		  }
+		  return self::$instance;
+		}
 	}
 }

@@ -5,6 +5,9 @@ if ( !defined('ABSPATH') )
 
 if( ! class_exists('WP_Query_Factory_Shortcode') ) {
   class WP_Query_Factory_Shortcode extends WP_Query_Factory {
+
+  	protected static $instance;
+
   	function __construct() {
 		add_action( 'init', array( $this, 'shortcode_button' ) );
 		add_shortcode( 'query_factory', array( $this, 'shortcode' ) );
@@ -46,15 +49,30 @@ if( ! class_exists('WP_Query_Factory_Shortcode') ) {
 		var_dump($wp_query->args);
 		echo '</pre>';
 		if( count($wp_query->results) > 0 ) {
+			global $post;
+			// $wp_query_factory = parent::instance();
+			$request_page_id = get_the_ID();
 			foreach( $wp_query->results as $post ) {
-				echo $post->post_title;
-				echo '<br />';
+				setup_postdata($post);
+				$post->request_page_id = $request_page_id;
+				// the_content();
+				include parent::instance()->get_template( 'default-template' );
 			}
+			wp_reset_postdata();
 		}
 		
 		$r = ob_get_clean();
 
 		return $r;
     }
+
+    /* Static Singleton Factory Method */
+	public static function instance() {
+	  if ( !isset( self::$instance ) ) {
+	    $className = __CLASS__;
+	    self::$instance = new $className;
+	  }
+	  return self::$instance;
+	}
   }
 }
