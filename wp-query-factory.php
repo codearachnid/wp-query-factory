@@ -207,6 +207,17 @@ if( ! class_exists('WP_Query_Factory') ) {
       return apply_filters(self::DOMAIN.'-available_templates', $templates->posts);
     }
 
+    public function available_queries( $args = array()){
+      $defaults = array(
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'post_type' => self::FACTORY_TYPE
+        );
+      $args = wp_parse_args( $args, $defaults );
+      $queries = new WP_Query($args);
+      return apply_filters(self::DOMAIN.'-available_queries', $queries->posts);
+    }
+
     public function exclude_factory_types( $post_type ){
       return ! in_array($post_type, array(self::FACTORY_TYPE, self::FACTORY_TEMPLATE));
     }

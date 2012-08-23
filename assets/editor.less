@@ -1,3 +1,7 @@
+#wp-query-factory-mce-select-query {
+	display: none;
+}
+#titlediv .inside{display: none;}
 #meta_query_template .inside{
 	select{
 		width:260px;
@@ -6,16 +10,22 @@
 #meta_query_builder .inside {
 	span.timespacer{
 		width:100px;
-		margin:0 5px;
+		margin:0 5px 0 -5px;
 		font-weight:bold;
+	}
+	fieldset{
+		margin-bottom:10px;
+		legend{
+			font-weight: bold;
+		}
 	}
 	select{
 		width:350px;
+		&.month{
+			width:100px;
+		}
 		&.week{
 			width:175px;
-		}
-		&.month{
-			width:110px;
 		}
 		&.day{
 			width:80px;
