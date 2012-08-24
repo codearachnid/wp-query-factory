@@ -84,6 +84,9 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 					case 'query_type':
 						$wp_query_factory->field_list[$field]['value'] = $post->post_mime_type;
 						break;
+					case 'author_exclude':
+						$wp_query_factory->field_list[$field]['value'] = isset($load_args['author']) ? $load_args['author'] : null;
+						break;
 					case 'orderby':
 						$wp_query_factory->field_list[$field]['value'] = isset($load_args[$field]) ? explode(" ", $load_args[$field]) : null;
 						break;
@@ -195,6 +198,14 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 											case 'default_template':
 												$unset = true;
 												break;
+											case 'author_exclude':
+												$author = $_POST['query_builder']['author'];
+												$author_exclude = $_POST['query_builder'][$field];
+												$merged_authors = array_merge( (array)$author, (array)$author_exclude);
+												$_POST['query_builder']['author'] = $merged_authors;
+												if(empty($_POST['query_builder']['author']))
+													unset($_POST['query_builder']['author']);
+												$unset = true;
 											case 'orderby':
 												$_POST['query_builder'][$field] = (is_array($_POST['query_builder'][$field]) && count($_POST['query_builder'][$field]) == 1) ? $_POST['query_builder'][$field][0] : implode(" ", $_POST['query_builder'][$field]);
 												if(empty($_POST['query_builder'][$field]))
@@ -224,15 +235,6 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 										if($unset)
 											unset($_POST['query_builder'][$field]);
 									}
-
-									// prevent a blank author filter from existing
-									// if( !empty($_POST['query_builder']['include_author']) && !empty($_POST['query_builder']['exclude_author'])) {
-									// 	$_POST['query_builder']['author'] = array_merge( (array)$_POST['query_builder']['include_author'], (array)$_POST['query_builder']['exclude_author']);
-									// } elseif( isset($_POST['query_builder']['include_author']) ) {
-									// 	$_POST['query_builder']['author'] = (array)$_POST['query_builder']['include_author'];
-									// } elseif( isset($_POST['query_builder']['exclude_author']) ) {
-									// 	$_POST['query_builder']['author'] = (array)$_POST['query_builder']['exclude_author'];
-									// }
 									
 									$post_content = base64_encode(serialize($_POST['query_builder']));
 								break;

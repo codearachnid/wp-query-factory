@@ -20,9 +20,11 @@ wp_nonce_field( parent::instance()->base_name, parent::DOMAIN );
 	<fieldset class="clear">
 		<legend><?php _e('User', 'wp-query-factory'); ?></legend>
 		<div class="left_half">
+			<?php wpqf_tag_select( $wp_query_factory->field_list['author'] ); ?>
 			<?php /* WP_Query_Factory_Template_Tags::select($users, $saved_arguments['author'], array('query_builder[include_author][]'), __('Select users to include', 'wp-query-factory'), true, true ); */ ?>
 		</div>
 		<div class="right_half">
+			<?php wpqf_tag_select( $wp_query_factory->field_list['author_exclude'] ); ?>
 			<?php /* WP_Query_Factory_Template_Tags::select($exclude_users, $saved_arguments['author'], array('query_builder[exclude_author][]'), __('Select users to exclude', 'wp-query-factory'), true, true ); */ ?>
 		</div>
 	</fieldset>

@@ -208,6 +208,12 @@ if( ! class_exists('WP_Query_Factory') ) {
         $templates[$template->post_name] = $template->post_title;
       }
 
+      // build user lists
+      $users = array();
+      foreach(get_users() as $user ) {
+       $users[$user->ID] = $user->display_name;
+      }
+
       $this->field_list = apply_filters(self::DOMAIN.'_field_list', array(
         'default_template' => array(
           'options' => $templates,
@@ -251,6 +257,22 @@ if( ! class_exists('WP_Query_Factory') ) {
           'label' => __('Select status', 'wp-query-factory'),
           'single_is_ok' => true,
           'required' => true
+          ),
+        'author' => array(
+          'options' => $users,
+          'name' => 'query_builder[author][]',
+          'label' => __('Select users to include', 'wp-query-factory'),
+          'key_value' => true,
+          'deselect' => true,
+          'single_is_ok' => false
+          ),
+        'author_exclude' => array(
+          'options' => $this->negative_keys($users),
+          'name' => 'query_builder[author_exclude][]',
+          'label' => __('Select users to exclude', 'wp-query-factory'),
+          'key_value' => true,
+          'deselect' => true,
+          'single_is_ok' => false
           ),
         'cat' => array(
           'options' => $categories,
@@ -344,6 +366,13 @@ if( ! class_exists('WP_Query_Factory') ) {
           'default' => null
           )
         ));
+    }
+
+    public function negative_keys($positive){
+      $negative = array();
+      foreach($positive as $key => $row)
+        $negative['-'.$key] = $row;
+      return $negative;
     }
 
     public function setup_timelist( $start, $end, $format = null){
