@@ -18,6 +18,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts') );
 
 			// custom WP LIST TABLE
+			add_filter( 'post_row_actions', array($this,'post_row_actions'), 10, 2 );
 			add_filter( 'manage_'.parent::FACTORY_TYPE.'_posts_columns' , array($this,'set_query_columns'));
 			add_action( 'manage_'.parent::FACTORY_TYPE.'_posts_custom_column' , array($this,'set_query_row'), 10, 2 );
 			add_filter( 'manage_'.parent::FACTORY_TEMPLATE.'_posts_columns' , array($this,'set_template_columns'));
@@ -306,6 +307,18 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 		    	$wpdb->update($wpdb->posts, $data, array(  'ID' => $post_id ));
 		    }
 	    }
+
+		public function post_row_actions( $actions, $post ) {
+			global $current_screen;
+			if( parent::exclude_factory_types($current_screen->post_type) ) 
+				return $actions;
+			// unset( $actions['edit'] );
+			unset( $actions['view'] );
+			unset( $actions['trash'] );
+			unset( $actions['inline hide-if-no-js'] );
+
+			return $actions;
+		}
 
 		public function set_query_columns($columns) {
 		    return array(
