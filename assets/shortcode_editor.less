@@ -3,39 +3,43 @@
   -webkit-border-radius: @radius;
   -moz-border-radius: @radius;
 }
-#wp-query-factory-mce-select-query.dialog{
-	border:1px solid #CCC;
-	padding:0;
-	.rounded-corners;
-	background:white;
-	select{
-		width:400px;
-		z-index: 1000;
-	}
-	.header{
-		background:#ccc;
-		padding:10px 20px;	
-		font-weight:bold;
-		span{
-			float:right;
-		}
-	}
-	.inside{
-		padding:20px;	
-	}
-	.chzn-container .chzn-drop {
-		z-index: 9999; /* change to 1002 or more */
-	}
-	.insert{
-		border-color: #298CBA;
-		font-weight: bold;
-		color: white;
-		background: #21759B url(../images/button-grad.png) repeat-x scroll left top;
-		text-shadow: rgba(0, 0, 0, 0.3) 0 -1px 0;
-		width: 100px;
-		text-align: center;
+#wp-query-factory-mce-select-query {
+	display: none;
+
+	&.dialog{
+		border:1px solid #CCC;
+		padding:0;
 		.rounded-corners;
-		padding:5px;
-		margin:10px 0;
+		background:white;
+		select{
+			width:400px;
+			z-index: 1000;
+		}
+		.header{
+			background:#ccc;
+			padding:10px 20px;	
+			font-weight:bold;
+			span{
+				float:right;
+			}
+		}
+		.inside{
+			padding:20px;	
+		}
+		.chzn-container .chzn-drop {
+			z-index: 9999; /* change to 1002 or more */
+		}
+		.insert{
+			border-color: #298CBA;
+			font-weight: bold;
+			color: white;
+			background: #21759B url(../images/button-grad.png) repeat-x scroll left top;
+			text-shadow: rgba(0, 0, 0, 0.3) 0 -1px 0;
+			width: 100px;
+			text-align: center;
+			.rounded-corners;
+			padding:5px;
+			margin:10px 0;
+		}
 	}
 }

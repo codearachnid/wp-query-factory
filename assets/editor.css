@@ -1,1 +1,65 @@
-#wp-query-factory-mce-select-query{display:none}#titlediv .inside{display:none}#meta_query_template .inside select{width:260px}#meta_query_builder .inside span.timespacer{width:100px;margin:0 5px 0 -5px;font-weight:700}#meta_query_builder .inside fieldset{margin-bottom:10px}#meta_query_builder .inside fieldset legend{font-weight:700}#meta_query_builder .inside select{width:350px}#meta_query_builder .inside select.month{width:100px}#meta_query_builder .inside select.week{width:175px}#meta_query_builder .inside select.day{width:80px}#meta_query_builder .inside select.time{width:80px}#meta_query_builder .inside .left{float:left}#meta_query_builder .inside .right{float:right}#meta_query_builder .inside .query_type{display:none}#meta_query_builder .inside .left_third_half,#meta_query_builder .inside .right_third_half{float:left;width:30%}#meta_query_builder .inside .left_twothird_half,#meta_query_builder .inside .right_twothird_half{float:left;width:70%}#meta_query_builder .inside .left_half,#meta_query_builder .inside .right_half{float:left;width:50%}#meta_query_builder .inside .right_third_half{float:right}#meta_query_builder .inside .right_twothird_half{float:right}#meta_query_builder .inside .right_half{float:right}
+#titlediv .inside {
+  display: none;
+}
+#meta_query_template .inside select {
+  width: 260px;
+}
+#meta_query_builder .inside span.timespacer {
+  width: 100px;
+  margin: 0 5px 0 -5px;
+  font-weight: bold;
+}
+#meta_query_builder .inside fieldset {
+  margin-bottom: 10px;
+}
+#meta_query_builder .inside fieldset legend {
+  font-weight: bold;
+}
+#meta_query_builder .inside select {
+  width: 350px;
+}
+#meta_query_builder .inside select.month {
+  width: 100px;
+}
+#meta_query_builder .inside select.week {
+  width: 175px;
+}
+#meta_query_builder .inside select.day {
+  width: 80px;
+}
+#meta_query_builder .inside select.time {
+  width: 80px;
+}
+#meta_query_builder .inside .left {
+  float: left;
+}
+#meta_query_builder .inside .right {
+  float: right;
+}
+#meta_query_builder .inside .query_type {
+  display: none;
+}
+#meta_query_builder .inside .left_third_half,
+#meta_query_builder .inside .right_third_half {
+  float: left;
+  width: 30%;
+}
+#meta_query_builder .inside .left_twothird_half,
+#meta_query_builder .inside .right_twothird_half {
+  float: left;
+  width: 70%;
+}
+#meta_query_builder .inside .left_half,
+#meta_query_builder .inside .right_half {
+  float: left;
+  width: 50%;
+}
+#meta_query_builder .inside .right_third_half {
+  float: right;
+}
+#meta_query_builder .inside .right_twothird_half {
+  float: right;
+}
+#meta_query_builder .inside .right_half {
+  float: right;
+}
