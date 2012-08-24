@@ -207,6 +207,7 @@ if( ! class_exists('WP_Query_Factory') ) {
           'name' => 'template_tools[default_template]',
           'label' => __('Select default template', 'wp-query-factory'),
           'not_arg' => true,
+          'key_value' => true,
           'required' => true
           ),
         'post_name' => array(
