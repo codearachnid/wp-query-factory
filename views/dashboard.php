@@ -4,15 +4,9 @@ if ( !defined('ABSPATH') )
 	die('-1');
 
 ?>
-<div class="wrap">
-	
-	<!-- Display Plugin Icon, Header, and Description -->
-	<div id="icon-tools" class="icon32"><br></div>
-	<h2>WordPress Query Factory</h2>
-
-	<!-- Beginning of the Plugin Options Form -->
-	<form method="post" action="options.php">
-		
-		
-	</form>
+<div id="wpqf_dashboard" class="dashboard">
+	<div class="header"><?php _e('Dashboard Header','wp-query-factory'); ?></div>
+	<div class="inside">
+		<p><?php _e('Dashboard content goes here.', 'wp-query-factory'); ?></p>
+	</div>
 </div>

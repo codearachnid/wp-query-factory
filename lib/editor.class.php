@@ -314,7 +314,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 				return $actions;
 			// unset( $actions['edit'] );
 			unset( $actions['view'] );
-			unset( $actions['trash'] );
+			// unset( $actions['trash'] );
 			unset( $actions['inline hide-if-no-js'] );
 
 			return $actions;
@@ -324,7 +324,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 		    return array(
 		        'cb' => '<input type="checkbox" />',
 		        'title' => __('Query','wp-query-factory'),
-		        'query_id' => __('Query ID','wp-query-factory'),
+		        'query_id' => __('Shortcode','wp-query-factory'),
 		        'query_type' => __('Type','wp-query-factory'),
 		        'template' =>__( 'Template','wp-query-factory')
 		    );
@@ -335,7 +335,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			$query_lookup = $query_lookup->posts[0];
 		    switch ( $column ) {
 		    	case 'query_id':
-		    		echo $query_lookup->post_name;
+		    		echo '[query_factory id="' . $query_lookup->post_name . '"]';
 		    		break;
 				case 'query_type':
 					echo ucwords(str_replace('-', ' ', str_replace('_', ' ', $query_lookup->post_mime_type)));
@@ -361,7 +361,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 		    return array(
 		        'cb' => '<input type="checkbox" />',
 		        'title' => __('Template','wp-query-factory'),
-		        'template_id' => __('Template ID','wp-query-factory'),
+		        'template_id' => __('ID','wp-query-factory'),
 		        'query_lookup' => __('Associated Queries','wp-query-factory')
 		    );
 		}

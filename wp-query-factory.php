@@ -80,6 +80,8 @@ if( ! class_exists('WP_Query_Factory') ) {
       add_action( 'admin_menu', array( $this, 'admin_menu' ) );
       add_action( 'admin_bar_menu', array($this, 'admin_bar_menu' ), 100 );
       add_filter( 'post_updated_messages', array( $this, 'override_confirmation_messages') );
+      // plugin dashboard
+      add_action( 'admin_notices', array($this, 'admin_dashboard') );
     }
 
     public static function init() {}
@@ -97,6 +99,12 @@ if( ! class_exists('WP_Query_Factory') ) {
         'id' => self::FACTORY_TYPE,
         'title' => __('Query Factory','wp-query-factory'),
         'href' => get_admin_url() . 'edit.php?post_type=' . self::FACTORY_TYPE ) );
+    }
+
+    public function admin_dashboard(){
+      global $current_screen;
+      if($current_screen->id == 'edit-'.self::FACTORY_TYPE)
+        include $this->get_view('dashboard');
     }
 
     public function query( $query_id = null, $args = array() ) {
