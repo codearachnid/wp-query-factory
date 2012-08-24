@@ -10,27 +10,38 @@ if( ! class_exists('WP_Query_Factory_Template_Tags') ) {
 
 		function __construct(){}
 		
-		public function select($data, $selected = null, $field_name = array(), $placeholder = '', $deselect = true, $key_value = false, $classes = '' ){
-			$multiple = strpos(current($field_name),'[]') !== false ? true : false;
-			$field_name = !is_array($field_name) ? array($field_name=>$field_name) : $field_name;
+		public function select( $field ){
+			$default = array(
+				'css'=>array(),
+				'deselect'=> false,
+				'id' => null,
+				'name' => null,
+				'label' => null,
+				'key_value' => false,
+				'value' => null,
+				'format_option' => true
+				);
+			$field = wp_parse_args( $field, $default );
+			extract( $field, EXTR_SKIP );
+			$multiple = strpos($name,'[]') !== false ? true : false;
 			echo '<select ';
-			echo !is_numeric(key($field_name)) ? 'id="' . key($field_name) . '" ' : '';
-			echo 'name="' . current($field_name) . '" ';
-			echo 'data-placeholder="' . $placeholder . '" ';
+			echo !is_null($id) ? 'id="' . $id . '" ' : '';
+			echo 'name="' . $name . '" ';
+			echo 'data-placeholder="' . $label . '" ';
 			echo 'class="';
-			echo ($deselect) ? 'chzn-select-deselect ' : '';
-			echo implode(" ", (array)$classes) . '" ';
-			echo ($multiple) ? 'multiple>' : '>';
-			echo ($deselect) ? '<option value></option>' : '';
-			foreach($data as $id => $row ) {
-				$val = ($key_value) ? $id : $row;
-				echo '<option value="' . $val . '" ';
-				if($multiple) {
-					selected( in_array($val, $selected) );
+			echo $deselect ? 'chzn-select-deselect ' : '';
+			echo implode(" ", (array)$css) . '" ';
+			echo $multiple ? 'multiple>' : '>';
+			echo $deselect ? '<option value></option>' : '';
+			foreach($options as $option_id => $option_label ) {
+				$option_value = $key_value ? $option_id : $option_label;
+				echo '<option value="' . $option_value . '" ';
+				if(is_array($value)) {
+					selected( in_array( $option_value, $value ) );
 				} else {
-					selected( $val, $selected );
+					selected( $option_value, $value );
 				}
-				echo '>' . ucwords(str_replace('-', ' ', str_replace('_', ' ', $row))) . '</option>';
+				echo $format_option ? '>' . ucwords(str_replace('-', ' ', str_replace('_', ' ', $option_label))) . '</option>' : '>' . $option_label . '</option>';
 			}
 			echo '</select>';
 		}
@@ -42,6 +53,12 @@ if( ! class_exists('WP_Query_Factory_Template_Tags') ) {
 		    self::$instance = new $className;
 		  }
 		  return self::$instance;
+		}
+	}
+
+	if( ! function_exists('wpqf_tag_select')) {
+		function wpqf_tag_select( $field, $args = array() ){
+			WP_Query_Factory_Template_Tags::select($field, $args);
 		}
 	}
 }

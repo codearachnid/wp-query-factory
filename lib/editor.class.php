@@ -18,8 +18,7 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts') );
 
 			add_action( 'wp_ajax_' . parent::DOMAIN . '_lookup', array( $this,'ajax_lookup' ) );
-
-			$this->query_builder_unset = apply_filters( parent::DOMAIN . '-query_builder_unset', array('post_name','query_type','include_author','exclude_author','offset','order','orderby','year','monthnum','day','hour','minute','second','w','s'));
+			$this->query_builder_unset = apply_filters( parent::DOMAIN . '-query_builder_unset', array('post_name','include_author','exclude_author','offset','order','orderby','year','monthnum','day','hour','minute','second','w','s'));
 			$this->query_builder_default =  apply_filters( parent::DOMAIN . '-query_builder_default', array('post_type','post_status'));
 		}
 
@@ -63,72 +62,55 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 			$wp_query_factory = parent::instance();
 
 			// load saved data
-			$saved_arguments = unserialize(base64_decode($post->post_content));
-			// echo '<pre>'; print_r($saved_arguments); echo '</pre>';
-
-			// setup forced defaults from param
-			foreach($this->query_builder_default as $default ) {
-				$saved_arguments[$default] = isset($saved_arguments[$default]) ? $saved_arguments[$default] : (array) array_shift(array_values($wp_query_factory->wp_query_param[$default]));
-			}
-
-			// setup blank defaults
-			foreach(array_merge($this->query_builder_unset,array('author')) as $blank_default) {
-				$saved_arguments[$blank_default] = isset($saved_arguments[$blank_default]) ? $saved_arguments[$blank_default] : '';
+			$load_args = unserialize(base64_decode($post->post_content));
+			$saved_arguments = $load_args;
+			echo '<pre>'; print_r($saved_arguments); echo '</pre>';
+			
+			foreach($wp_query_factory->field_list as $field => $setup){
+				switch($field) {
+					case 'default_template':
+						$wp_query_factory->field_list[$field]['value'] = $post->to_ping;
+						break;
+					case 'post_name':
+						$wp_query_factory->field_list[$field]['value'] = $post->post_name;
+						break;
+					case 'query_type':
+						$wp_query_factory->field_list[$field]['value'] = $post->post_mime_type;
+						break;
+					case 'orderby':
+						$wp_query_factory->field_list[$field]['value'] = isset($load_args[$field]) ? explode(" ", $load_args[$field]) : null;
+						break;
+					case 'category_type': // setup advanced category selection and types
+						foreach($wp_query_factory->field_list['category_type']['options'] as $option => $title) {
+							if(isset($load_args[$option])) {
+								$wp_query_factory->field_list[$field]['value'] = $option;
+								$wp_query_factory->field_list['cat']['value'] = $load_args[$option];
+							}
+						}
+						break;
+					default:
+						$wp_query_factory->field_list[$field]['value'] = isset($load_args[$field]) ? $load_args[$field] : null;
+						break;
+				}
 			}
 
 			// setup values
-			$query_types = $wp_query_factory->wp_query_param['query_type'];
-			$wp_list_users = array();
-			$wp_list_users_exclude = $wp_list_users;
-			foreach(get_users() as $user ) {
-				$wp_list_users[$user->ID] = $user->display_name;
-				$wp_list_users_exclude['-'.$user->ID] = $user->display_name;
-			}
-			$users = apply_filters( parent::DOMAIN . '_editor_users', $wp_list_users );
-			$exclude_users = apply_filters( parent::DOMAIN . '_editor_users_exclude', $wp_list_users_exclude );
-			$post_types = $wp_query_factory->wp_query_param['post_type'];
-			$post_status = $wp_query_factory->wp_query_param['post_status'];
-			$order = $wp_query_factory->wp_query_param['order'];
-			$orderby = $wp_query_factory->wp_query_param['orderby'];
-			$offset = isset($saved_arguments['offset']) ? $saved_arguments['offset'] : '';
-			$year = isset($saved_arguments['year']) ? $saved_arguments['year'] : '';
-			$monthnum = array();
-			for($i=1;$i<13;$i++){
-				$monthnum[$i] = date( 'F', mktime(0, 0, 0, $i) );
-			}
-			$day = array();
-			for($i=1;$i<32;$i++){
-				$day[$i] = $this->ordinal($i);
-			}
-			$hour = array();
-			for($i=1;$i<25;$i++){
-				$hour[$i] = $i;
-			}
-			$minute = array();
-			$second = array();
-			for($i=1;$i<61;$i++){
-				$minute[$i] = $i;
-				$second[$i] = $i;
-			}
-			$w = array();
-			for($i=1;$i<53;$i++){
-				$w[$i] = $this->ordinal($i);
-			}
-			$s = isset($saved_arguments['s']) ? $saved_arguments['s'] : '';
+			// $wp_list_users = array();
+			// $wp_list_users_exclude = $wp_list_users;
+			// foreach(get_users() as $user ) {
+			// 	$wp_list_users[$user->ID] = $user->display_name;
+			// 	$wp_list_users_exclude['-'.$user->ID] = $user->display_name;
+			// }
+			// $users = apply_filters( parent::DOMAIN . '_editor_users', $wp_list_users );
+			// $exclude_users = apply_filters( parent::DOMAIN . '_editor_users_exclude', $wp_list_users_exclude );
 
-			// setup ordinal formatting if I can figure out why PHP 5.3+ throws class not found err
-			// $ordinal = new NumberFormatter( (WPLANG != '') ? WPLANG : 'en_US', NumberFormatter::ORDINAL);
-			
-			include parent::instance()->get_view('meta.query_builder');
+			include $wp_query_factory->get_view('meta.query_builder');
 		}
 
 		public function template_tools( $post ){
-			$available_templates = parent::available_templates();
-			$templates = array();
-			foreach($available_templates as $template) {
-				$templates[$template->post_name] = $template->post_title;
-			}
-			include parent::instance()->get_view('meta.template_tools');
+			$wpqf = parent::instance();
+			$wpqf->field_list['default_template']['value'] = $post->to_ping;
+			include $wpqf->get_view('meta.template_tools');
 		}
 
 		public function template_assistance( $post ) {
@@ -184,36 +166,66 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 							// set the "query ID" from the post_name or post_title if blank
 							$post_name = !empty($_POST['query_builder']['post_name']) ? sanitize_title($_POST['query_builder']['post_name']) : sanitize_title($_POST['post_title']);
 							$default_template = isset($_POST['template_tools']['default_template']) && !is_null($_POST['template_tools']['default_template']) ? $_POST['template_tools']['default_template'] : '';
-							$query_type = in_array( $_POST['query_builder']['query_type'], $wp_query_factory->wp_query_param['query_type']) ? $_POST['query_builder']['query_type'] : null;
+							$query_type = in_array( $_POST['query_builder']['query_type'], $wp_query_factory->field_list['query_type']['options']) ? $_POST['query_builder']['query_type'] : null;
 
 							switch( $query_type ) {
 								case 'WP_User_Query':
 									break;
 								default:
-									
-									// protect blank query from lack of field value with default
-									foreach($this->query_builder_default as $default ) {
-										$_POST['query_builder'][$default] = isset($_POST['query_builder'][$default]) ? $_POST['query_builder'][$default] : (array) array_shift(array_values($wp_query_factory->wp_query_param[$default]));
+
+									foreach($wp_query_factory->field_list as $field => $setup){
+
+										$unset = false;
+
+										foreach( array('required','not_arg') as $bool ) {
+											${$bool} = isset($setup[$bool]) ? $setup[$bool] : false ;	
+										}
+										
+										switch($field) {
+											// no need for these fields in the query_builder args
+											case 'query_type':
+											case 'post_name':
+											case 'default_template':
+												$unset = true;
+												break;
+											case 'orderby':
+												$_POST['query_builder'][$field] = (is_array($_POST['query_builder'][$field]) && count($_POST['query_builder'][$field]) == 1) ? $_POST['query_builder'][$field][0] : implode(" ", $_POST['query_builder'][$field]);
+												if(empty($_POST['query_builder'][$field]))
+													$unset = true;
+												break;
+											case 'category_type': // setup advanced category selection and types
+												if(!empty($_POST['query_builder'][$field])) {
+													$_POST['query_builder'][ $_POST['query_builder'][$field] ] = (array) $_POST['query_builder']['cat'];
+													unset($_POST['query_builder']['cat']);
+												}
+												$unset = true;
+												break;
+											default:
+												if(!empty($_POST['query_builder'][$field])) {
+													$_POST['query_builder'][$field] = (is_array($_POST['query_builder'][$field]) && count($_POST['query_builder'][$field]) == 1) ? $_POST['query_builder'][$field][0] : $_POST['query_builder'][$field];
+												} else{
+													$unset = true;
+												}
+
+												// fail check for required values
+												if( $required ) {
+													$_POST['query_builder'][$field] = empty($_POST['query_builder'][$field]) ? $setup['default'] : $_POST['query_builder'][$field];
+													$unset = false;
+												}
+												break;
+										}
+										if($unset)
+											unset($_POST['query_builder'][$field]);
 									}
 
 									// prevent a blank author filter from existing
-									if( !empty($_POST['query_builder']['include_author']) && !empty($_POST['query_builder']['exclude_author'])) {
-										$_POST['query_builder']['author'] = array_merge( (array)$_POST['query_builder']['include_author'], (array)$_POST['query_builder']['exclude_author']);
-									} elseif( isset($_POST['query_builder']['include_author']) ) {
-										$_POST['query_builder']['author'] = (array)$_POST['query_builder']['include_author'];
-									} elseif( isset($_POST['query_builder']['exclude_author']) ) {
-										$_POST['query_builder']['author'] = (array)$_POST['query_builder']['exclude_author'];
-									}
-
-									// print_r($_POST['query_builder']);
-									// die;
-
-									foreach($this->query_builder_unset  as $unset) {
-										unset($_POST['query_builder'][$unset]);
-									}
-
-									// print_r($_POST['query_builder']);
-									// die;
+									// if( !empty($_POST['query_builder']['include_author']) && !empty($_POST['query_builder']['exclude_author'])) {
+									// 	$_POST['query_builder']['author'] = array_merge( (array)$_POST['query_builder']['include_author'], (array)$_POST['query_builder']['exclude_author']);
+									// } elseif( isset($_POST['query_builder']['include_author']) ) {
+									// 	$_POST['query_builder']['author'] = (array)$_POST['query_builder']['include_author'];
+									// } elseif( isset($_POST['query_builder']['exclude_author']) ) {
+									// 	$_POST['query_builder']['author'] = (array)$_POST['query_builder']['exclude_author'];
+									// }
 									
 									$post_content = base64_encode(serialize($_POST['query_builder']));
 								break;
@@ -291,10 +303,6 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 				wp_dequeue_script( 'autosave' );
 	        }
 	    }
-
-		public function ordinal($n) {
-			return $n . date('S',mktime(1,1,1,1,( (($n>=10)+($n>=20)+($n==0))*10 + $n%10) ));
-		}
 
 	    public function force_post_update( $post_id, $data = null ){
 	    	if( !empty( $data )) {

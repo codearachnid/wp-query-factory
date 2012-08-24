@@ -52,7 +52,7 @@ if( ! class_exists('WP_Query_Factory') ) {
     public $base_url;
     public $base_path;
     public $base_name;
-    public $wp_query_param;
+    public $field_list;
     public $request_page_id = 0;
 
     private $post_type_args = array(
@@ -72,7 +72,7 @@ if( ! class_exists('WP_Query_Factory') ) {
       $this->base_path = plugin_dir_path( __FILE__ );
       $this->base_url = plugin_dir_url( __FILE__ );
       $this->base_name = plugin_basename( __FILE__ );
-      $this->setup_wp_query_param();
+      $this->setup_field_list();
 
       do_action(self::DOMAIN);
 
@@ -188,12 +188,171 @@ if( ! class_exists('WP_Query_Factory') ) {
       register_post_type( self::FACTORY_TEMPLATE,$args);
     }
 
-    public function setup_wp_query_param(){
-      $this->wp_query_param['query_type'] = apply_filters( self::DOMAIN . '-wp_query_param-query_type', array('WP_Query','WP_User_Query'));
-      $this->wp_query_param['post_type'] = apply_filters( self::DOMAIN . '-wp_query_param-post_type', array_filter(get_post_types(), array( $this, 'exclude_factory_types' ) ) );
-      $this->wp_query_param['post_status'] = apply_filters( self::DOMAIN . '-wp_query_param-post_status', array('publish','pending','draft','auto-draft','future','private','inherit','trash','any'));
-      $this->wp_query_param['order'] = apply_filters( self::DOMAIN . '-wp_query_param-order', array('DESC','ASC'));
-      $this->wp_query_param['orderby'] = apply_filters( self::DOMAIN . '-wp_query_param-orderby', array('date','ID','author','title','modified','parent','rand','comment_count','menu_order','meta_value','meta_value_num','none'));
+    public function setup_field_list(){
+      // build category list
+      $categories = array();
+      foreach (get_categories( array('hide_empty' => 0) ) as $category) {
+        $categories[$category->term_id] = $category->name;
+      }
+      // build available template list
+      $templates = array();
+      foreach($this->available_templates() as $template) {
+        $templates[$template->post_name] = $template->post_title;
+      }
+
+      $this->field_list = apply_filters(self::DOMAIN.'_field_list', array(
+        'default_template' => array(
+          'options' => $templates,
+          'id' => 'post_name',
+          'name' => 'template_tools[default_template]',
+          'label' => __('Select default template', 'wp-query-factory'),
+          'not_arg' => true,
+          'required' => true
+          ),
+        'post_name' => array(
+          'options' => array('WP_Query','WP_User_Query'),
+          'id' => 'post_name',
+          'name' => 'query_builder[post_name]',
+          'label' => __('Select type of query to create', 'wp-query-factory'),
+          'default' => null,
+          'not_arg' => true,
+          'required' => true
+          ),
+        'query_type' => array(
+          'options' => array('WP_Query','WP_User_Query'),
+          'id' => 'query_type',
+          'name' => 'query_builder[query_type]',
+          'label' => __('Select type of query to create', 'wp-query-factory'),
+          'default' => 'WP_Query',
+          'not_arg' => true,
+          'required' => true
+          ),
+        'post_type' => array(
+          'options' => array_filter(get_post_types(), array( $this, 'exclude_factory_types' ) ),
+          'name' => 'query_builder[post_type][]',
+          'label' => __('Select types', 'wp-query-factory'),
+          'default' => 'post',
+          'single_is_ok' => true,
+          'required' => true
+          ),
+        'post_status' => array(
+          'options' => array('publish','pending','draft','auto-draft','future','private','inherit','trash','any'),
+          'name' => 'query_builder[post_status][]',
+          'default' => 'publish',
+          'label' => __('Select status', 'wp-query-factory'),
+          'single_is_ok' => true,
+          'required' => true
+          ),
+        'cat' => array(
+          'options' => $categories,
+          'name' => 'query_builder[cat][]',
+          'label' => __('Select category', 'wp-query-factory'),
+          'key_value' => true,
+          'deselect' => true,
+          'single_is_ok' => false
+          ),
+        'category_type' => array(
+          'options' => array('category__and' => 'And', 'category__in'=>'In','category__not_in'=>'Not In'),
+          'name' => 'query_builder[category_type]',
+          'label' => __('Multiple category handling', 'wp-query-factory'),
+          'key_value' => true,
+          'deselect' => true
+          ),
+        'offset' => array(
+          'name' => 'query_builder[offset]',
+          'default' => null
+          ),
+        'ignore_sticky_posts' => array(
+          'name' => 'query_builder[ignore_sticky_posts]',
+          'default' => 0
+          ),
+        'order' => array(
+          'options' => array('DESC'=>__('Descending','wp-query-factory'),'ASC'=>__('Ascending','wp-query-factory')),
+          'name' => 'query_builder[order]',
+          'label' => __('Sort direction', 'wp-query-factory'),
+          'key_value' => true,
+          'deselect' => true,
+          'single_is_ok' => false
+          ),
+        'orderby' => array(
+          'options' => array('date','ID','author','title','modified','parent','rand','comment_count','menu_order','meta_value','meta_value_num','none'),
+          'name' => 'query_builder[orderby][]',
+          'label' => __('Order by field', 'wp-query-factory'),
+          'deselect' => true,
+          'single_is_ok' => false
+          ),
+        'year' => array(
+          'name' => 'query_builder[year]',
+          'default' => null
+          ),
+        'monthnum' => array(
+          'options' => $this->setup_timelist(1,13,'month'),
+          'name' => 'query_builder[monthnum]',
+          'label' => __('Select month', 'wp-query-factory'),
+          'key_value' => true,
+          'deselect' => true,
+          'css' => array('month')
+          ),
+        'day' => array(
+          'options' => $this->setup_timelist(1,31,'ordinal'),
+          'name' => 'query_builder[day]',
+          'label' => __('Select day', 'wp-query-factory'),
+          'key_value' => true,
+          'deselect' => true,
+          'css' => array('day')
+          ),
+        'hour' => array(
+          'options' => $this->setup_timelist(1,25),
+          'name' => 'query_builder[hour]',
+          'label' => __('Select hour', 'wp-query-factory'),
+          'deselect' => true,
+          'css' => array('time')
+          ),
+        'minute' => array(
+          'options' => $this->setup_timelist(1,61),
+          'name' => 'query_builder[minute]',
+          'label' => __('Select minute', 'wp-query-factory'),
+          'deselect' => true,
+          'css' => array('time')
+          ),
+        'second' => array(
+          'options' => $this->setup_timelist(1,61),
+          'name' => 'query_builder[second]',
+          'label' => __('Select second', 'wp-query-factory'),
+          'deselect' => true,
+          'css' => array('time')
+          ),
+        'w' => array(
+          'options' => $this->setup_timelist(1,53,'ordinal'),
+          'name' => 'query_builder[w]',
+          'label' => __('Select week of the year', 'wp-query-factory'),
+          'key_value' => true,
+          'deselect' => true,
+          'css' => array('week')
+          ),
+        's' => array( // search keyword
+          'name' => 'query_builder[s]',
+          'default' => null
+          )
+        ));
+    }
+
+    public function setup_timelist( $start, $end, $format = null){
+      $list = array();
+      for($n=$start;$n<$end;$n++) {
+        switch($format) {
+          case 'month':
+            $list[$n] = date( 'F', mktime(0, 0, 0, $n) );
+            break;
+          case 'ordinal':
+            $list[$n] = $n . date('S',mktime(1,1,1,1,( (($n>=10)+($n>=20)+($n==0))*10 + $n%10) ));
+            break;
+          default:
+            $list[$n] = $n;
+            break;
+        }
+      }
+      return $list;
     }
 
     public function available_templates( $args = array()){
