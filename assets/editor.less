@@ -1,6 +1,25 @@
-#wp-query-factory-mce-select-query {
-	display: none;
+.rounded-corners (@radius: 5px) {
+  border-radius: @radius;
+  -webkit-border-radius: @radius;
+  -moz-border-radius: @radius;
 }
+.dashboard{
+	border:1px solid #ccc;
+	padding:0;
+	margin:0 0 20px;
+	.rounded-corners;
+	.header{
+		padding:10px 20px;
+		background: #eee;
+		border-bottom: #bbb;
+	}
+	.inside{
+		padding:10px 20px;
+	}
+}
+#posts-filter .tablenav select[name=m],
+#posts-filter .tablenav select[name=cat],
+#posts-filter .tablenav #post-query-submit,
 #titlediv .inside{display: none;}
 #meta_query_template .inside{
 	select{
