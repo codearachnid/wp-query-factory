@@ -241,12 +241,26 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 							}
 
 							// Force post_content to be set outside of save_post loop
-							$this->force_post_update( $post_id , array(
+							// $this->force_post_update( $post_id , array(
+							// 	'ID' => $post_id,
+							// 	'post_name' => $post_name,
+							// 	'post_content' => $post_content,
+							// 	'post_mime_type' => $query_type,
+							// 	'to_ping' => $default_template
+							// 	));
+
+							// unhook this function so it doesn't loop infinitely
+							remove_action( 'save_post', array( $this, 'save_post' ) );
+							// update the post, which calls save_post again
+							wp_update_post(array(
+								'ID' => $post_id,
 								'post_name' => $post_name,
 								'post_content' => $post_content,
 								'post_mime_type' => $query_type,
 								'to_ping' => $default_template
 								));
+							// re-hook this function
+							add_action( 'save_post', array( $this, 'save_post' ) );
 
 							// flush the transient it will be rebuilt on first call from the front
 							delete_transient( self::TRANSIENT . '_' . $post_name );
