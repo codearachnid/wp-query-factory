@@ -82,6 +82,8 @@ if( ! class_exists('WP_Query_Factory') ) {
       add_filter( 'post_updated_messages', array( $this, 'override_confirmation_messages') );
       // plugin dashboard
       add_action( 'admin_notices', array($this, 'admin_dashboard') );
+      // add our various styles
+      wp_enqueue_style(WP_Query_Factory::DOMAIN . '-custom-icons-css', $this->base_url . 'assets/css/icons.css');
     }
 
     public static function init() {}
@@ -172,8 +174,7 @@ if( ! class_exists('WP_Query_Factory') ) {
     public function register_framework() {
       // register wp-query-factory
       $args = wp_parse_args( array(
-        'menu_position' => 79,
-        'menu_icon' => plugins_url('wp-query-factory/assets/script_gear.png')
+        'menu_position' => 79
         ), $this->post_type_args );
       $args['labels'] = $this->setup_labels(array(
         'name' => __('WordPress Query Factory', 'wp-query-factory'),
@@ -194,7 +195,7 @@ if( ! class_exists('WP_Query_Factory') ) {
         'plural' => __('Templates', 'wp-query-factory')
         ));
       register_post_type( self::FACTORY_TEMPLATE,$args);
-    }
+    }    
 
     public function setup_field_list(){
       // build category list

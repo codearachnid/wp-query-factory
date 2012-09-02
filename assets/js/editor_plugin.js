@@ -22,7 +22,6 @@ wpqf_id.find('.close').click(function(){
     tinymce.create('tinymce.plugins.wp_query_factory', {
         init : function(ed, url) {
             ed.addButton('wp_query_factory', {
-                image : url + '/button.png',
                 onclick : function() {
                     wpqf_id.dialog('open');
                 }

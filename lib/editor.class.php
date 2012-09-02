@@ -30,8 +30,8 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 		}
 
 		public function add_meta_box(){
-			wp_enqueue_style( parent::DOMAIN . '-chosen', parent::instance()->base_url . 'assets/chosen/chosen.css' );
-			wp_enqueue_script( parent::DOMAIN . '-chosen', parent::instance()->base_url . 'assets/chosen/chosen.jquery.min.js', array('jquery'));			
+			wp_enqueue_style( parent::DOMAIN . '-chosen', parent::instance()->base_url . 'assets/js/chosen/chosen.css' );
+			wp_enqueue_script( parent::DOMAIN . '-chosen', parent::instance()->base_url . 'assets/js/chosen/chosen.jquery.min.js', array('jquery'));			
 			add_meta_box(
 				'meta_query_template', 
 				__('Template','wp-query-factory'), 
@@ -409,8 +409,8 @@ if( ! class_exists('WP_Query_Factory_Editor') ) {
 	    public function admin_enqueue_scripts() {
 	        // if ( in_array( get_post_type(), array( self::FACTORY_TYPE, self::FACTORY_TEMPLATE)) )
 	        if( parent::check_factory_types( get_post_type() ) ) {        				
-				wp_enqueue_style( parent::DOMAIN . '-editor', parent::instance()->base_url . 'assets/editor.css');
-				wp_enqueue_script( parent::DOMAIN . '-editor', parent::instance()->base_url . 'assets/editor.js', array('jquery'));
+				wp_enqueue_style( parent::DOMAIN . '-editor', parent::instance()->base_url . 'assets/css/editor.css');
+				wp_enqueue_script( parent::DOMAIN . '-editor', parent::instance()->base_url . 'assets/js/editor.js', array('jquery'));
 				// prevent autosaves on plugin post types (prevents live results from changing during edit)
 				wp_dequeue_script( 'autosave' );
 	        }

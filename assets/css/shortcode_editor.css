@@ -1,0 +1,59 @@
+#wp-query-factory-mce-select-query {
+  display: none;
+}
+#wp-query-factory-mce-select-query.dialog {
+  border: 1px solid #CCC;
+  padding: 0;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  background: white;
+}
+#wp-query-factory-mce-select-query.dialog select {
+  width: 400px;
+  z-index: 1000;
+}
+#wp-query-factory-mce-select-query.dialog .header {
+  background: #ccc;
+  padding: 10px 20px;
+  font-weight: bold;
+}
+#wp-query-factory-mce-select-query.dialog .header span {
+  float: right;
+}
+#wp-query-factory-mce-select-query.dialog .inside {
+  padding: 20px;
+}
+#wp-query-factory-mce-select-query.dialog .chzn-container .chzn-drop {
+  z-index: 9999;
+  /* change to 1002 or more */
+
+}
+#wp-query-factory-mce-select-query.dialog .insert {
+  border-color: #298CBA;
+  font-weight: bold;
+  color: white;
+  background: #21759b url(../images/button-grad.png) repeat-x scroll left top;
+  text-shadow: rgba(0, 0, 0, 0.3) 0 -1px 0;
+  width: 100px;
+  text-align: center;
+  border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  padding: 5px;
+  margin: 10px 0;
+}
+span.mce_wp_query_factory {
+  background: url(../images/menu-icon-sprite.png) no-repeat 2px 3px !important;
+}
+span.mce_wp_query_factory:hover {
+  background-position: 2px -21px !important;
+}
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3/2), only screen and (min-device-pixel-ratio: 1.5) {
+  span.mce_wp_query_factory {
+    background-image: url(../images/menu-icon-sprite@2x.png) !important;
+    -webkit-background-size: 16px 48px;
+    -moz-background-size: 16px 48px;
+    background-size: 16px 48px;
+  }
+}

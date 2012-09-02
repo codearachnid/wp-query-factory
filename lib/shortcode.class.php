@@ -22,7 +22,7 @@ if( ! class_exists('WP_Query_Factory_Shortcode') ) {
 
 		// Add only in Rich Editor mode
 		if ( get_user_option('rich_editing') == 'true') {
-			wp_enqueue_style(parent::DOMAIN.'-shortcode-css', parent::instance()->base_url . 'assets/shortcode_editor.css');
+			wp_enqueue_style(parent::DOMAIN.'-shortcode-css', parent::instance()->base_url . 'assets/css/shortcode_editor.css');
 			add_filter( 'mce_external_plugins', array( $this, 'add_tinymce_plugin' ) );
 			add_filter( 'mce_buttons', array( $this, 'register_button' ) );
 			add_action( 'admin_footer', array( $this, 'mce_select_query'));
@@ -45,7 +45,7 @@ if( ! class_exists('WP_Query_Factory_Shortcode') ) {
     }
      
     function add_tinymce_plugin( $plugin_array ) {
-		$plugin_array[ parent::DOMAIN ] = parent::instance()->base_url . 'assets/query_factory/editor_plugin.js';
+		$plugin_array[ parent::DOMAIN ] = parent::instance()->base_url . 'assets/js/editor_plugin.js';
 		return $plugin_array;
     }
 
@@ -66,7 +66,7 @@ if( ! class_exists('WP_Query_Factory_Shortcode') ) {
 		// echo '</pre>';
 		if( !empty($load_template) && $wp_query_factory->get_template( $load_template ) && count($wp_query->results) > 0 ) {
 			global $post;
-			wp_enqueue_style(parent::DOMAIN . '-front-css', $wp_query_factory->base_url . 'assets/front.css');
+			wp_enqueue_style(parent::DOMAIN . '-front-css', $wp_query_factory->base_url . 'assets/css/front.css');
 			$request_page_id = get_the_ID();
 			foreach( $wp_query->results as $post ) {
 				setup_postdata($post);
